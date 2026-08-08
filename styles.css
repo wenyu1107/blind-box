@@ -258,6 +258,44 @@ button {
   display: none !important;
 }
 
+.lock-hint.is-error {
+  color: #ffd0c8;
+}
+
+.case-picker {
+  width: min(100%, 320px);
+  margin: 0 auto 16px;
+  text-align: left;
+}
+
+.case-picker[hidden] {
+  display: none !important;
+}
+
+.case-picker-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  color: rgba(255, 244, 236, 0.7);
+}
+
+.case-select {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 244, 236, 0.28);
+  background: rgba(255, 244, 236, 0.12);
+  color: var(--cream);
+  font: inherit;
+  outline: none;
+}
+
+.case-select option {
+  color: #2b1713;
+}
+
 .gift-box:focus-visible {
   outline: 2px solid var(--accent-soft);
   outline-offset: 10px;

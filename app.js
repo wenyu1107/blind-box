@@ -26,6 +26,10 @@
   const challengeCfg = config.challenge || {};
   const items = Array.isArray(config.items) ? config.items : [];
 
+  let caseLibrary = null;
+  let casesLoadError = null;
+  let activeCaseId = challengeCfg.caseId || null;
+
   const els = {
     brand: document.getElementById("brand"),
     nickname: document.getElementById("nickname"),
@@ -36,6 +40,8 @@
     againBtn: document.getElementById("again-btn"),
     homeBtn: document.getElementById("home-btn"),
     lockHint: document.getElementById("lock-hint"),
+    casePicker: document.getElementById("case-picker"),
+    caseSelect: document.getElementById("case-select"),
     panelHero: document.getElementById("panel-hero"),
     panelChallenge: document.getElementById("panel-challenge"),
     panelOpening: document.getElementById("panel-opening"),
@@ -71,12 +77,17 @@
   let lastItemId = null;
   let drawing = false;
   let history = loadHistory();
-  let unlocked = loadUnlocked();
+  let unlocked = false;
   let drawnRecord = loadDrawnRecord();
   let questionQueue = [];
   let questionIndex = 0;
   let answering = false;
   let awaitingNext = false;
+
+  function unlockStorageKey() {
+    const id = activeCaseId || challengeCfg.caseId || challengeCfg.casePick || "default";
+    return UNLOCK_KEY + ":" + id;
+  }
 
   function loadHistory() {
     try {
@@ -100,9 +111,10 @@
 
   function loadUnlocked() {
     if (!challengeCfg.enabled) return true;
+    if (challengeCfg.forceChallenge) return false;
     if (challengeCfg.requireEveryDraw) return false;
     try {
-      return localStorage.getItem(UNLOCK_KEY) === "1";
+      return localStorage.getItem(unlockStorageKey()) === "1";
     } catch (e) {
       return false;
     }
@@ -111,7 +123,9 @@
   function persistUnlocked() {
     if (challengeCfg.requireEveryDraw) return;
     try {
-      localStorage.setItem(UNLOCK_KEY, "1");
+      localStorage.setItem(unlockStorageKey(), "1");
+      // 清理旧版全局解锁标记，避免以后误跳过题目
+      localStorage.removeItem(UNLOCK_KEY);
     } catch (e) {
       console.warn("保存解锁状态失败:", e);
     }
@@ -168,17 +182,24 @@
     if (Array.isArray(challengeCfg.questions) && challengeCfg.questions.length) {
       return true;
     }
-    // 案件库模式：配置了 caseSource / caseId / random 也算启用
     return Boolean(
       challengeCfg.caseSource ||
         challengeCfg.caseId ||
         challengeCfg.casePick === "random" ||
+        challengeCfg.casePick === "manual" ||
         (Array.isArray(challengeCfg.caseIds) && challengeCfg.caseIds.length)
     );
   }
 
+  function questionsReady() {
+    return Array.isArray(challengeCfg.questions) && challengeCfg.questions.length > 0;
+  }
+
   function needsChallenge() {
-    return challengeEnabled() && !unlocked;
+    if (!challengeEnabled()) return false;
+    if (casesLoadError) return true;
+    if (!questionsReady() && challengeCfg.caseSource) return true;
+    return !unlocked;
   }
 
   function normalizeCase(raw) {
@@ -201,21 +222,36 @@
     };
   }
 
+  function libraryList(library) {
+    if (Array.isArray(library)) return library;
+    if (library && Array.isArray(library.cases)) return library.cases;
+    return [];
+  }
+
   function selectCasesFromLibrary(library) {
-    const list = Array.isArray(library)
-      ? library
-      : library && Array.isArray(library.cases)
-        ? library.cases
-        : [];
+    const list = libraryList(library);
     if (!list.length) return [];
 
     const pick = challengeCfg.casePick || "id";
     if (pick === "random") {
       const one = list[Math.floor(Math.random() * list.length)];
+      activeCaseId = one && one.id;
       return [normalizeCase(one)].filter(Boolean);
     }
+    if (pick === "manual") {
+      const selectedId =
+        (els.caseSelect && els.caseSelect.value) ||
+        activeCaseId ||
+        challengeCfg.caseId ||
+        (list[0] && list[0].id);
+      const found = list.find(function (c) {
+        return c.id === selectedId;
+      }) || list[0];
+      activeCaseId = found && found.id;
+      return [normalizeCase(found)].filter(Boolean);
+    }
     if (pick === "list" && Array.isArray(challengeCfg.caseIds)) {
-      return challengeCfg.caseIds
+      const selected = challengeCfg.caseIds
         .map(function (id) {
           return list.find(function (c) {
             return c.id === id;
@@ -223,6 +259,8 @@
         })
         .map(normalizeCase)
         .filter(Boolean);
+      activeCaseId = selected[0] && selected[0].id;
+      return selected;
     }
 
     const id = challengeCfg.caseId || "case-001";
@@ -230,14 +268,32 @@
       list.find(function (c) {
         return c.id === id;
       }) || list[0];
+    activeCaseId = found && found.id;
     return [normalizeCase(found)].filter(Boolean);
   }
 
-  function ensureQuestions() {
-    if (Array.isArray(challengeCfg.questions) && challengeCfg.questions.length) {
-      return Promise.resolve(challengeCfg.questions);
-    }
+  function fillCaseSelect(list) {
+    if (!els.caseSelect || !els.casePicker) return;
+    const manual = challengeCfg.casePick === "manual";
+    els.casePicker.hidden = !manual;
+    if (!manual) return;
 
+    els.caseSelect.innerHTML = "";
+    list.forEach(function (c) {
+      const opt = document.createElement("option");
+      opt.value = c.id;
+      opt.textContent = c.id + " · " + (c.title || "未命名案件");
+      els.caseSelect.appendChild(opt);
+    });
+    const prefer = challengeCfg.caseId || activeCaseId || (list[0] && list[0].id);
+    if (prefer) els.caseSelect.value = prefer;
+    activeCaseId = els.caseSelect.value;
+  }
+
+  function loadCaseLibrary() {
+    if (caseLibrary) {
+      return Promise.resolve(caseLibrary);
+    }
     const src = challengeCfg.caseSource || "./cases.json";
     return fetch(src)
       .then(function (res) {
@@ -247,12 +303,37 @@
         return res.json();
       })
       .then(function (data) {
+        caseLibrary = data;
+        casesLoadError = null;
+        fillCaseSelect(libraryList(data));
+        return data;
+      });
+  }
+
+  function ensureQuestions() {
+    if (
+      Array.isArray(challengeCfg.questions) &&
+      challengeCfg.questions.length &&
+      challengeCfg.casePick !== "manual" &&
+      challengeCfg.casePick !== "random"
+    ) {
+      activeCaseId = challengeCfg.questions[0].id || activeCaseId;
+      return Promise.resolve(challengeCfg.questions);
+    }
+
+    return loadCaseLibrary()
+      .then(function (data) {
         const selected = selectCasesFromLibrary(data);
         if (!selected.length) {
-          throw new Error("案件库为空或 caseId 无效");
+          throw new Error("案件库为空，或 caseId 无效（请检查 data.js）");
         }
         challengeCfg.questions = selected;
+        unlocked = loadUnlocked();
         return selected;
+      })
+      .catch(function (err) {
+        casesLoadError = err;
+        throw err;
       });
   }
 
@@ -277,8 +358,19 @@
   function syncHeroCta() {
     const locked = needsChallenge();
     const finished = hasDrawn() && !canDrawMore();
+    els.lockHint.classList.remove("is-error");
 
-    els.openBtn.classList.toggle("is-locked", locked && !finished);
+    els.openBtn.classList.toggle("is-locked", (locked || Boolean(casesLoadError)) && !finished);
+
+    if (casesLoadError) {
+      els.lockHint.hidden = false;
+      els.lockHint.classList.add("is-error");
+      els.lockHint.textContent =
+        "案件库加载失败。请用本地服务器或 GitHub Pages 打开（不要直接双击 HTML）。";
+      els.ctaBtn.textContent = "重试加载案件";
+      return;
+    }
+
     if (finished) {
       els.lockHint.hidden = false;
       els.lockHint.textContent = config.drawnHint || "这份惊喜只能拆一次哦～";
@@ -288,7 +380,10 @@
 
     els.lockHint.hidden = !locked;
     els.lockHint.textContent = locked
-      ? "盲盒已上锁，先通过解密考验"
+      ? "盲盒已上锁，先通过解密考验" +
+        (activeCaseId && challengeCfg.casePick !== "manual"
+          ? "（" + activeCaseId + "）"
+          : "")
       : "";
     els.ctaBtn.textContent = locked
       ? config.challengeCtaLabel || "开始解密"
@@ -697,8 +792,19 @@
   }
 
   function startChallenge() {
+    // manual / random：每次开题重新从案件库选取
+    if (challengeCfg.casePick === "manual" || challengeCfg.casePick === "random") {
+      challengeCfg.questions = [];
+    }
+
     ensureQuestions()
       .then(function (questions) {
+        unlocked = loadUnlocked();
+        if (unlocked && !challengeCfg.forceChallenge) {
+          syncHeroCta();
+          showPanel("hero");
+          return;
+        }
         const source = questions.slice();
         questionQueue = challengeCfg.shuffle ? shuffleCopy(source) : source;
         questionIndex = 0;
@@ -707,6 +813,7 @@
       })
       .catch(function (err) {
         console.warn(err);
+        syncHeroCta();
         alert(
           "案件库加载失败。请用本地服务器或 GitHub Pages 打开页面（不要直接双击 HTML）。\n" +
             String(err && err.message ? err.message : err)
@@ -863,6 +970,21 @@
   }
 
   function onHeroAction() {
+    if (casesLoadError) {
+      casesLoadError = null;
+      caseLibrary = null;
+      ensureQuestions()
+        .then(function () {
+          unlocked = loadUnlocked();
+          syncHeroCta();
+        })
+        .catch(function (err) {
+          console.warn(err);
+          syncHeroCta();
+        });
+      return;
+    }
+
     if (hasDrawn() && !canDrawMore()) {
       showDrawnResult();
       return;
@@ -895,6 +1017,14 @@
     if (els.challengeNextBtn) {
       els.challengeNextBtn.addEventListener("click", onNextQuestion);
     }
+    if (els.caseSelect) {
+      els.caseSelect.addEventListener("change", function () {
+        activeCaseId = els.caseSelect.value;
+        challengeCfg.questions = [];
+        unlocked = loadUnlocked();
+        syncHeroCta();
+      });
+    }
   }
 
   function init() {
@@ -907,6 +1037,7 @@
     const boot = challengeEnabled()
       ? ensureQuestions().catch(function (err) {
           console.warn("预加载案件库失败:", err);
+          casesLoadError = err;
           return [];
         })
       : Promise.resolve([]);
@@ -914,11 +1045,13 @@
     boot.then(function () {
       if (!challengeEnabled()) {
         unlocked = true;
+      } else {
+        unlocked = loadUnlocked();
       }
       syncHeroCta();
 
-      // 已抽过：直接展示结果，避免再抽
-      if (hasDrawn() && !canDrawMore()) {
+      // 已抽过且本案件已解锁：直接展示结果
+      if (hasDrawn() && !canDrawMore() && !needsChallenge()) {
         showDrawnResult();
       } else {
         showPanel("hero");

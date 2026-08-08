@@ -1,6 +1,6 @@
 // -*- coding: utf-8 -*-
 /**
- * 恋爱盲盒内容配置：文案、解密题、奖池与抽取概率都在这里改。
+ * 盲盒内容配置：文案、解密题、奖池与抽取概率都在这里改。
  *
  * weight：相对权重，越大越容易抽到。
  * 实际概率 ≈ 该项 weight / 所有可抽项 weight 之和
@@ -30,19 +30,30 @@ window.GIFT_CONFIG = {
   },
 
   /**
-   * 开箱前解密关卡
-   * 案件正文在 cases.json（案件库，共 50 案）。
+   * 开箱前解密关卡（题目来自 cases.json）
    *
-   * caseSource: 案件库路径
-   * casePick:
-   *   - "id"     使用 caseId 指定的一案（默认）
-   *   - "random" 每次随机一案
-   *   - "list"   使用 caseIds 数组（可多案串联）
-   * caseId / caseIds: 配合上面的 casePick
+   * 【怎么选案件】
+   * 1) 手动指定（推荐发给她之前改好）：
+   *    casePick: "id"
+   *    caseId: "case-007"          // 改成你想要的案件编号
+   *
+   * 2) 打开页面时人工下拉选择：
+   *    casePick: "manual"
+   *
+   * 3) 每次随机一案：
+   *    casePick: "random"
+   *
+   * 4) 多案串联：
+   *    casePick: "list"
+   *    caseIds: ["case-001", "case-012"]
+   *
+   * forceChallenge: true 时忽略本机「已解锁」缓存，强制先答题
+   * （调试用；正式给她玩可改回 false）
    */
   challenge: {
     enabled: true,
     requireEveryDraw: false,
+    forceChallenge: true,
     shuffle: false,
     introTitle: "开箱前的档案题",
     introText:
@@ -54,13 +65,13 @@ window.GIFT_CONFIG = {
 
     caseSource: "./cases.json",
     casePick: "id",
-    // 默认案件：闭架书库的失踪手稿（答案：沈岚）
     caseId: "case-001",
+    // casePick: "manual",
     // casePick: "random",
     // casePick: "list",
     // caseIds: ["case-001", "case-007"],
 
-    // 若手动填写 questions，将优先使用、不读案件库
+    // 一般保持 []，让程序从 cases.json 读取
     questions: [],
   },
 
