@@ -580,17 +580,69 @@ button {
   font-size: 0.88rem;
   line-height: 1.7;
   color: var(--ink-soft);
-  white-space: pre-line;
 }
 
 .evidence-item.is-open .evidence-body {
   display: block;
 }
 
+.evidence-layer-label {
+  margin: 0 0 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(43, 23, 19, 0.45);
+}
+
+.evidence-surface,
+.evidence-deep-text {
+  margin: 0;
+  white-space: pre-line;
+}
+
+.evidence-deep {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(43, 23, 19, 0.12);
+}
+
+.evidence-deep-btn {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(43, 23, 19, 0.16);
+  background: rgba(240, 160, 122, 0.16);
+  color: var(--ink);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.evidence-deep-btn:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.evidence-item.is-deep .evidence-deep-btn {
+  display: none;
+}
+
+.evidence-deep-text[hidden] {
+  display: none !important;
+}
+
+.evidence-item.is-deep {
+  border-color: rgba(139, 74, 60, 0.35);
+}
+
 .evidence-note {
   margin: 8px 0 0;
   font-size: 0.78rem;
   color: rgba(43, 23, 19, 0.45);
+}
+
+.evidence-note.is-ready {
+  color: #8a4b1f;
+  font-weight: 600;
 }
 
 .challenge-prompt {
@@ -809,8 +861,20 @@ button {
   color: var(--ink-soft);
 }
 
+.drawn-note {
+  margin: 20px auto 0;
+  max-width: 28ch;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: rgba(255, 244, 236, 0.78);
+}
+
+.drawn-note[hidden] {
+  display: none !important;
+}
+
 .result-actions {
-  margin-top: 28px;
+  margin-top: 20px;
   display: grid;
   gap: 4px;
   justify-items: center;
