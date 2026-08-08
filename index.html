@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#c45c4a" />
+    <title>恋爱盲盒</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Noto+Sans+SC:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="atmosphere" aria-hidden="true">
+      <div class="glow glow-a"></div>
+      <div class="glow glow-b"></div>
+      <div class="grain"></div>
+      <div class="sparkles" id="sparkles"></div>
+    </div>
+
+    <main class="stage">
+      <!-- 首屏 -->
+      <section class="panel panel-hero" id="panel-hero" data-active="true">
+        <p class="brand" id="brand">恋爱盲盒</p>
+        <h1 class="headline">
+          <span class="nickname" id="nickname">宝贝</span>
+          <span class="headline-text" id="headline">今天的惊喜，拆开才知道</span>
+        </h1>
+        <p class="subtitle" id="subtitle">
+          先解开谜题，才能拆开我们之间的小奖励、小惩罚，或一件甜蜜小事。
+        </p>
+
+        <div class="gift-wrap">
+          <button class="gift-box is-locked" id="open-btn" type="button" aria-label="拆开盲盒">
+            <span class="gift-lock" id="gift-lock" aria-hidden="true"></span>
+            <span class="gift-shadow"></span>
+            <span class="gift-body">
+              <span class="gift-lid">
+                <span class="gift-bow"></span>
+              </span>
+              <span class="gift-base"></span>
+              <span class="gift-ribbon-v"></span>
+              <span class="gift-ribbon-h"></span>
+            </span>
+          </button>
+        </div>
+
+        <p class="lock-hint" id="lock-hint">盲盒已上锁，先通过解密考验</p>
+        <button class="cta" id="cta-btn" type="button">开始解密</button>
+      </section>
+
+      <!-- 解密关卡 -->
+      <section class="panel panel-challenge" id="panel-challenge" hidden>
+        <p class="challenge-kicker" id="challenge-kicker">开箱前的小考验</p>
+        <p class="challenge-intro" id="challenge-intro"></p>
+
+        <div class="challenge-progress" id="challenge-progress" aria-live="polite"></div>
+
+        <article class="challenge-card" id="challenge-card">
+          <div class="challenge-meta">
+            <span class="challenge-kind" id="challenge-kind">侦探题</span>
+            <span class="challenge-step" id="challenge-step">1 / 3</span>
+          </div>
+          <h2 class="challenge-title" id="challenge-title">题目</h2>
+          <div class="challenge-story" id="challenge-story" hidden></div>
+          <div class="challenge-evidence" id="challenge-evidence" hidden>
+            <p class="evidence-label">关键证物（点开逐条查阅）</p>
+            <div class="evidence-list" id="evidence-list"></div>
+          </div>
+          <p class="challenge-prompt" id="challenge-prompt"></p>
+
+          <div class="challenge-choices" id="challenge-choices" hidden></div>
+
+          <form class="challenge-form" id="challenge-form" hidden>
+            <label class="sr-only" for="challenge-input">你的答案</label>
+            <input
+              id="challenge-input"
+              class="challenge-input"
+              type="text"
+              autocomplete="off"
+              placeholder="写下你的推理…"
+            />
+            <button class="cta challenge-submit" id="challenge-submit" type="submit">提交答案</button>
+          </form>
+
+          <div class="challenge-tools">
+            <button class="ghost challenge-hint-btn" id="challenge-hint-btn" type="button">看提示</button>
+          </div>
+          <p class="challenge-hint" id="challenge-hint" hidden></p>
+          <p class="challenge-feedback" id="challenge-feedback" hidden></p>
+        </article>
+
+        <button class="ghost" id="challenge-back-btn" type="button">返回首页</button>
+      </section>
+
+      <!-- 开箱中 -->
+      <section class="panel panel-opening" id="panel-opening" hidden>
+        <p class="opening-hint">正在拆开…</p>
+        <div class="gift-wrap gift-wrap-opening">
+          <div class="gift-box is-opening" aria-hidden="true">
+            <span class="gift-shadow"></span>
+            <span class="gift-body">
+              <span class="gift-lid">
+                <span class="gift-bow"></span>
+              </span>
+              <span class="gift-base"></span>
+              <span class="gift-ribbon-v"></span>
+              <span class="gift-ribbon-h"></span>
+            </span>
+            <span class="burst"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 结果 -->
+      <section class="panel panel-result" id="panel-result" hidden>
+        <article class="result-card" id="result-card">
+          <p class="result-type" id="result-type">奖励</p>
+          <h2 class="result-title" id="result-title">愿望卡</h2>
+          <p class="result-text" id="result-text">一个小愿望，无条件答应。</p>
+        </article>
+        <div class="result-actions">
+          <button class="cta" id="again-btn" type="button">再抽一次</button>
+          <button class="ghost" id="home-btn" type="button">回到首页</button>
+        </div>
+        <aside class="history" id="history" hidden>
+          <p class="history-label">最近抽到</p>
+          <ul class="history-list" id="history-list"></ul>
+        </aside>
+      </section>
+    </main>
+
+    <script src="./data.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
