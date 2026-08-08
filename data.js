@@ -8,7 +8,7 @@
  */
 window.GIFT_CONFIG = {
   // 页面文案
-  brand: "周六盲盒",
+  brand: "周末盲盒",
   nickname: "亲爱的",
   headline: "今天的惊喜，拆开才知道",
   subtitle: "把本周的烦恼交给盲盒，周末一起享受惊喜吧",
@@ -143,7 +143,7 @@ window.GIFT_CONFIG = {
     {
       id: "r1",
       type: "reward",
-      weight: 12,
+      weight: 5,
       title: "愿望卡",
       text: "一个小愿望，无条件答应（合理范围内～）",
     },
@@ -152,7 +152,7 @@ window.GIFT_CONFIG = {
       type: "reward",
       weight: 14,
       title: "请客卡",
-      text: "今晚想吃什么，我请——你点什么我都买单。",
+      text: "中午或晚上想吃什么，我请——你点什么我都买单。",
     },
     {
       id: "r3",
@@ -178,7 +178,7 @@ window.GIFT_CONFIG = {
     {
       id: "p1",
       type: "punish",
-      weight: 14,
+      weight: 6,
       title: "土味情话",
       text: "现场对我说一句土味情话，说完不许笑，说不清就重来。",
     },
@@ -186,25 +186,18 @@ window.GIFT_CONFIG = {
       id: "p2",
       type: "punish",
       weight: 12,
-      title: "卖萌拍照",
-      text: "摆一个我指定的可爱姿势，拍一张发我当壁纸。",
+      title: "专属称呼",
+      text: "接下来一小时，叫我一个我指定的称呼（不许害羞跳过）。",
     },
     {
       id: "p3",
       type: "punish",
       weight: 12,
-      title: "专属称呼",
-      text: "接下来一小时，叫我一个我指定的称呼（不许害羞跳过）。",
+      title: "清唱一曲",
+      text: "当场唱一首歌给你听",
     },
     {
       id: "p4",
-      type: "punish",
-      weight: 12,
-      title: "清唱一曲",
-      text: "当场清唱一首歌给我听，跑调也算完成任务。",
-    },
-    {
-      id: "p5",
       type: "punish",
       weight: 12,
       title: "听令卡",
