@@ -55,6 +55,7 @@
     challengeHintBtn: document.getElementById("challenge-hint-btn"),
     challengeHint: document.getElementById("challenge-hint"),
     challengeFeedback: document.getElementById("challenge-feedback"),
+    challengeNextBtn: document.getElementById("challenge-next-btn"),
     challengeBackBtn: document.getElementById("challenge-back-btn"),
     resultCard: document.getElementById("result-card"),
     resultType: document.getElementById("result-type"),
@@ -72,6 +73,7 @@
   let questionQueue = [];
   let questionIndex = 0;
   let answering = false;
+  let awaitingNext = false;
 
   function loadHistory() {
     try {
@@ -305,6 +307,23 @@
     els.challengeFeedback.hidden = true;
     els.challengeFeedback.textContent = "";
     els.challengeFeedback.classList.remove("is-ok", "is-bad");
+    hideNextButton();
+  }
+
+  function hideNextButton() {
+    awaitingNext = false;
+    if (!els.challengeNextBtn) return;
+    els.challengeNextBtn.hidden = true;
+  }
+
+  function showNextButton(isLast) {
+    if (!els.challengeNextBtn) return;
+    awaitingNext = true;
+    els.challengeNextBtn.hidden = false;
+    els.challengeNextBtn.textContent = isLast
+      ? challengeCfg.finishLabel || "解锁盲盒"
+      : challengeCfg.nextLabel || "下一题";
+    els.challengeNextBtn.focus();
   }
 
   function showFeedback(ok, text) {
@@ -430,7 +449,10 @@
       els.challengeChoices.innerHTML = "";
       els.challengeForm.hidden = false;
       els.challengeInput.value = "";
+      els.challengeInput.disabled = false;
       els.challengeInput.placeholder = q.placeholder || "写下你的推理…";
+      const submitBtn = els.challengeForm.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = false;
       // 长文题不自动聚焦，避免挡住证物区
       if (!q.story && !(q.evidence && q.evidence.length)) {
         els.challengeInput.focus();
@@ -450,26 +472,32 @@
     unlocked = true;
     persistUnlocked();
     updateProgress();
-    showFeedback(true, challengeCfg.successText || "解密成功！");
-    window.setTimeout(function () {
-      syncHeroCta();
-      showPanel("hero");
-    }, 900);
+    syncHeroCta();
+    showPanel("hero");
   }
 
   function advanceOrFinish(explain) {
-    showFeedback(true, explain ? "答对了！ " + explain : "答对了！");
+    const isLast = questionIndex >= questionQueue.length - 1;
+    const detail = explain ? "答对了！ " + explain : "答对了！";
+    showFeedback(true, detail);
+    showNextButton(isLast);
+  }
+
+  function onNextQuestion() {
+    if (!awaitingNext) return;
+    hideNextButton();
     questionIndex += 1;
     updateProgress();
 
-    const wait = explain ? Math.min(2800, 1200 + String(explain).length * 12) : 700;
-    window.setTimeout(function () {
-      if (questionIndex >= questionQueue.length) {
+    if (questionIndex >= questionQueue.length) {
+      showFeedback(true, challengeCfg.successText || "解密成功！盲盒已经解锁～");
+      // 稍作停留后回首页，也可立即返回
+      window.setTimeout(function () {
         completeChallenge();
-      } else {
-        renderQuestion();
-      }
-    }, wait);
+      }, 700);
+      return;
+    }
+    renderQuestion();
   }
 
   function onChoice(index, btn) {
@@ -515,10 +543,11 @@
 
     answering = true;
     els.challengeInput.disabled = true;
+    if (els.challengeForm) {
+      const submitBtn = els.challengeForm.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
+    }
     advanceOrFinish(q.explain);
-    window.setTimeout(function () {
-      els.challengeInput.disabled = false;
-    }, 800);
   }
 
   function onHint() {
@@ -597,6 +626,9 @@
     els.challengeBackBtn.addEventListener("click", goHome);
     els.challengeForm.addEventListener("submit", onTextSubmit);
     els.challengeHintBtn.addEventListener("click", onHint);
+    if (els.challengeNextBtn) {
+      els.challengeNextBtn.addEventListener("click", onNextQuestion);
+    }
   }
 
   function init() {

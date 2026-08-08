@@ -710,6 +710,17 @@ button {
   color: #9a3d45;
 }
 
+.challenge-next-btn {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  box-shadow: none;
+}
+
+.challenge-next-btn[hidden] {
+  display: none !important;
+}
+
 .panel-challenge .ghost {
   color: rgba(255, 244, 236, 0.82);
   border-color: rgba(255, 244, 236, 0.28);

@@ -46,6 +46,8 @@ window.GIFT_CONFIG = {
     introText: "五道题全部答对，盲盒才会为你打开。提示可以点，但答案要自己想哦。",
     successText: "解密成功！盲盒已经解锁～",
     failText: "还差一点，再想想～",
+    nextLabel: "下一题",
+    finishLabel: "解锁盲盒",
     questions: [
       {
         id: "q1",
