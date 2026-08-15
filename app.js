@@ -247,7 +247,7 @@
       id: raw.id,
       kind: raw.kind || "detective",
       mode: raw.mode || (raw.choices ? "choice" : "text"),
-      requireDeepAll: raw.requireDeepAll !== false,
+      requireDeepAll: raw.requireDeepAll === true,
       title: raw.title,
       story: raw.story,
       evidence: raw.evidence || [],
@@ -748,7 +748,7 @@
     if (submitBtn) submitBtn.disabled = !enabled;
   }
 
-  function renderEvidence(evidence, options) {
+  function renderEvidence(evidence) {
     if (!els.challengeEvidence || !els.evidenceList) return;
     els.evidenceList.innerHTML = "";
     if (!Array.isArray(evidence) || !evidence.length) {
@@ -756,36 +756,20 @@
       return;
     }
 
-    const requireDeepAll = Boolean(options && options.requireDeepAll);
     const note = document.createElement("p");
     note.className = "evidence-note";
 
-    function deepCount() {
-      return els.evidenceList.querySelectorAll(".evidence-item.is-deep").length;
-    }
-
     function syncNote() {
       const opened = els.evidenceList.querySelectorAll(".evidence-item.is-open").length;
-      const deep = deepCount();
-      if (requireDeepAll) {
-        const ready = deep >= evidence.length;
-        note.classList.toggle("is-ready", ready);
-        note.textContent = ready
-          ? "深入检视已完成，可以作答了"
-          : "初看 " +
-            opened +
-            " / " +
-            evidence.length +
-            "，深入检视 " +
-            deep +
-            " / " +
-            evidence.length +
-            "（需全部深入后才能提交）";
-        setSubmitEnabled(ready);
-      } else {
-        note.textContent =
-          "已查阅 " + opened + " / " + evidence.length + "（建议全部看完再作答）";
-      }
+      note.classList.toggle("is-ready", opened >= evidence.length);
+      note.textContent =
+        "已查阅 " +
+        opened +
+        " / " +
+        evidence.length +
+        (opened >= evidence.length
+          ? "（可以作答了）"
+          : "（建议全部看完再交叉核对）");
     }
 
     evidence.forEach(function (item, idx) {
@@ -800,58 +784,18 @@
       const body = document.createElement("div");
       body.className = "evidence-body";
 
-      const hasLayers = Boolean(item.surface || item.deep);
-      if (hasLayers) {
-        const surfaceLabel = document.createElement("p");
-        surfaceLabel.className = "evidence-layer-label";
-        surfaceLabel.textContent = "初看";
-
-        const surface = document.createElement("p");
-        surface.className = "evidence-surface";
-        surface.textContent = item.surface || item.content || "";
-
-        const deepWrap = document.createElement("div");
-        deepWrap.className = "evidence-deep";
-
-        const deepBtn = document.createElement("button");
-        deepBtn.type = "button";
-        deepBtn.className = "evidence-deep-btn";
-        deepBtn.textContent = "深入检视";
-
-        const deepLabel = document.createElement("p");
-        deepLabel.className = "evidence-layer-label";
-        deepLabel.textContent = "深入检视";
-        deepLabel.hidden = true;
-
-        const deepText = document.createElement("p");
-        deepText.className = "evidence-deep-text";
-        deepText.textContent = item.deep || "";
-        deepText.hidden = true;
-
-        deepBtn.addEventListener("click", function (event) {
-          event.stopPropagation();
-          wrap.classList.add("is-deep");
-          deepBtn.disabled = true;
-          deepLabel.hidden = false;
-          deepText.hidden = false;
-          syncNote();
-        });
-
-        deepWrap.appendChild(deepBtn);
-        deepWrap.appendChild(deepLabel);
-        deepWrap.appendChild(deepText);
-
-        body.appendChild(surfaceLabel);
-        body.appendChild(surface);
-        body.appendChild(deepWrap);
+      const plain = document.createElement("p");
+      plain.className = "evidence-surface";
+      // 新格式只用 content；旧 surface/deep 合并为事实文本（兼容）
+      if (item.content) {
+        plain.textContent = item.content;
       } else {
-        const plain = document.createElement("p");
-        plain.className = "evidence-surface";
-        plain.textContent = item.content || "";
-        body.appendChild(plain);
-        // 无分层证物：展开即视为已深入
-        wrap.classList.add("is-deep");
+        const parts = [];
+        if (item.surface) parts.push(item.surface);
+        if (item.deep) parts.push(item.deep);
+        plain.textContent = parts.join("\n\n");
       }
+      body.appendChild(plain);
 
       toggle.addEventListener("click", function () {
         wrap.classList.toggle("is-open");
@@ -866,6 +810,7 @@
     els.evidenceList.appendChild(note);
     syncNote();
     els.challengeEvidence.hidden = false;
+    setSubmitEnabled(true);
   }
 
   function renderQuestion() {
@@ -886,7 +831,7 @@
       questionIndex + 1 + " / " + questionQueue.length;
     els.challengeTitle.textContent = q.title || "谜题";
     renderStory(q.story);
-    renderEvidence(q.evidence, { requireDeepAll: q.requireDeepAll });
+    renderEvidence(q.evidence);
     els.challengePrompt.textContent = q.prompt || "";
     els.challengePrompt.classList.toggle(
       "is-final",
@@ -914,11 +859,9 @@
       els.challengeChoices.innerHTML = "";
       els.challengeForm.hidden = false;
       els.challengeInput.value = "";
-      els.challengeInput.placeholder = q.placeholder || "写下你的推理…";
-      // 需要深入检视时，由 renderEvidence 控制是否可提交
-      if (!q.requireDeepAll) {
-        setSubmitEnabled(true);
-      }
+      els.challengeInput.placeholder = q.placeholder || "交叉核对后写下结论…";
+      els.challengeInput.disabled = false;
+      setSubmitEnabled(true);
       if (!q.story && !(q.evidence && q.evidence.length)) {
         els.challengeInput.focus();
       }

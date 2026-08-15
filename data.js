@@ -75,9 +75,9 @@ window.GIFT_CONFIG = {
     shuffle: false,
     introTitle: "开箱前的档案题",
     introText:
-      "破获这一桩案子才能打开盲盒。证物要先「初看」，再「深入检视」——第一眼常常有误导。",
+      "破获这一桩案子才能打开盲盒。证物只提供事实，不会直接告诉你谁是答案——请全部查阅后交叉核对。",
     successText: "解密成功！盲盒已经解锁～",
-    failText: "还差一点。试着把「初看」和「深入检视」对照着看～",
+    failText: "还差一点。试试把几份证物的时间线叠在一起看～",
     nextLabel: "下一题",
     finishLabel: "解锁盲盒",
 
