@@ -15,8 +15,8 @@ window.GIFT_CONFIG = {
   ctaLabel: "拆开盲盒",
   challengeCtaLabel: "开始解密",
   againLabel: "再抽一次",
-  drawnLabel: "查看我的结果",
-  drawnHint: "这份惊喜只能拆一次哦，好好收下吧～",
+  drawnLabel: "查看今日结果",
+  drawnHint: "今天已经抽过啦，结果不会变哦～",
   emptyHint: "奖池空了，去 data.js 里再加一点心意吧。",
 
   /**
@@ -25,8 +25,8 @@ window.GIFT_CONFIG = {
    */
   gate: {
     enabled: true,
-    password: "520",
-    title: "先输入暗号",
+    password: "19981005",
+    title: "先输入密码",
     subtitle: "输入正确才能进入周末盲盒～",
     placeholder: "请输入密码",
     submitLabel: "进入",
@@ -37,8 +37,10 @@ window.GIFT_CONFIG = {
 
   // 抽取规则
   rules: {
-    // 最多可抽次数（1 = 只能抽一次；与奖池 weight 无关）
+    // 最多可抽次数（配合 drawScope）
     maxDraws: 1,
+    // day = 当天只能抽一次，刷新也是同一结果；forever = 永久只能抽一次
+    drawScope: "day",
     // 是否避免与上一次结果相同
     avoidConsecutiveRepeat: true,
     // 本地记录最近几条（0 表示不展示历史）
@@ -96,9 +98,9 @@ window.GIFT_CONFIG = {
     {
       id: "r1",
       type: "reward",
-      weight: 5,
-      title: "愿望卡",
-      text: "一个小愿望，无条件答应（合理范围内～）",
+      weight:999,
+      title: "礼物卡",
+      text: "阿婆全集 - 84套限量典藏版",
     },
     {
       id: "r2",

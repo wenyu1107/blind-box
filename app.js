@@ -148,12 +148,30 @@
     return n;
   }
 
+  function todayKey() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    return String(y) + m + d;
+  }
+
+  function drawScope() {
+    return rules.drawScope === "forever" ? "forever" : "day";
+  }
+
   function loadDrawnRecord() {
     try {
       const raw = localStorage.getItem(DRAWN_KEY);
       if (!raw) return null;
       const parsed = JSON.parse(raw);
-      return parsed && typeof parsed === "object" ? parsed : null;
+      if (!parsed || typeof parsed !== "object") return null;
+
+      // day 模式：只认「今天」的结果；跨天视为未抽，可再抽一次
+      if (drawScope() === "day") {
+        if (parsed.d_s !== todayKey()) return null;
+      }
+      return parsed;
     } catch (e) {
       console.warn("读取抽奖记录失败:", e);
       return null;
@@ -166,6 +184,7 @@
       type: item.type,
       title: item.title,
       text: item.text,
+      d_s: todayKey(),
       at: Date.now(),
     };
     try {
@@ -176,16 +195,25 @@
   }
 
   function hasDrawn() {
+    // 重新按当天规则读一次，避免跨天仍占着旧结果
+    drawnRecord = loadDrawnRecord();
     return Boolean(drawnRecord);
   }
 
   function canDrawMore() {
+    if (drawing) return false;
     if (!hasDrawn()) return true;
-    // 当前策略：有抽奖记录即视为已用完；maxDraws>1 时用历史条数估算
     const limit = maxDraws();
     if (!Number.isFinite(limit)) return true;
+    // 当天 / 永久：已有有效抽奖记录则不能再抽
     if (limit <= 1) return false;
     return history.length < limit;
+  }
+
+  function setDrawButtonsDisabled(disabled) {
+    if (els.ctaBtn) els.ctaBtn.disabled = Boolean(disabled);
+    if (els.openBtn) els.openBtn.disabled = Boolean(disabled);
+    if (els.againBtn) els.againBtn.disabled = Boolean(disabled);
   }
 
   function challengeEnabled() {
@@ -379,13 +407,19 @@
       els.lockHint.textContent =
         "案件库加载失败。请用本地服务器或 GitHub Pages 打开（不要直接双击 HTML）。";
       els.ctaBtn.textContent = "重试加载案件";
+      setDrawButtonsDisabled(false);
       return;
     }
 
     if (finished) {
       els.lockHint.hidden = false;
-      els.lockHint.textContent = config.drawnHint || "这份惊喜只能拆一次哦～";
-      els.ctaBtn.textContent = config.drawnLabel || "查看我的结果";
+      els.lockHint.textContent =
+        config.drawnHint ||
+        (drawScope() === "day"
+          ? "今天已经抽过啦，结果不会变哦～"
+          : "这份惊喜只能拆一次哦～");
+      els.ctaBtn.textContent = config.drawnLabel || "查看今日结果";
+      setDrawButtonsDisabled(false);
       return;
     }
 
@@ -399,20 +433,24 @@
     els.ctaBtn.textContent = locked
       ? config.challengeCtaLabel || "开始解密"
       : config.ctaLabel || "拆开盲盒";
+    setDrawButtonsDisabled(drawing);
   }
 
   function syncResultActions() {
-    // maxDraws <= 1：永不显示「再抽一次」；更大时仅在仍有次数时显示
-    const limit = maxDraws();
-    const showAgain = Number.isFinite(limit) ? limit > 1 && canDrawMore() : true;
+    // 当天/永久限一次：不显示「再抽一次」
+    const showAgain = false;
 
     if (els.againBtn) {
       els.againBtn.hidden = !showAgain;
       if (config.againLabel) els.againBtn.textContent = config.againLabel;
     }
     if (els.drawnNote) {
-      els.drawnNote.hidden = !hasDrawn() || showAgain;
-      if (config.drawnHint) els.drawnNote.textContent = config.drawnHint;
+      els.drawnNote.hidden = !hasDrawn();
+      els.drawnNote.textContent =
+        config.drawnHint ||
+        (drawScope() === "day"
+          ? "今天已经抽过啦，结果不会变哦～"
+          : "这份惊喜只能拆一次哦，好好收下吧～");
     }
   }
 
@@ -1026,6 +1064,7 @@
   }
 
   function draw() {
+    // 动画进行中 / 今天已抽过：禁止再次抽签
     if (drawing) return;
 
     if (!canDrawMore()) {
@@ -1044,18 +1083,22 @@
       return;
     }
 
+    // 先落盘再播动画：连点也只会是同一条结果
     drawing = true;
+    setDrawButtonsDisabled(true);
+    lastItemId = item.id;
+    persistDrawnRecord(item);
+    pushHistory(item);
+    syncResultActions();
+    syncHeroCta();
     showPanel("opening");
 
     window.setTimeout(function () {
-      lastItemId = item.id;
-      persistDrawnRecord(item);
       renderResult(item);
-      pushHistory(item);
-      syncResultActions();
-      syncHeroCta();
       showPanel("result");
       drawing = false;
+      setDrawButtonsDisabled(false);
+      syncHeroCta();
     }, OPENING_MS);
   }
 
