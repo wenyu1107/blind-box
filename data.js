@@ -19,14 +19,30 @@ window.GIFT_CONFIG = {
   drawnHint: "这份惊喜只能拆一次哦，好好收下吧～",
   emptyHint: "奖池空了，去 data.js 里再加一点心意吧。",
 
+  /**
+   * 开场密码（最先出现）
+   * 改 password 即可；enabled: false 可关掉
+   */
+  gate: {
+    enabled: true,
+    password: "520",
+    title: "先输入暗号",
+    subtitle: "输入正确才能进入周末盲盒～",
+    placeholder: "请输入密码",
+    submitLabel: "进入",
+    failText: "暗号不对，再试试～",
+    // true：本机记住已通过，刷新不用再输；正式惊喜可改 false
+    remember: false,
+  },
+
   // 抽取规则
   rules: {
-    // 最多可抽次数（1 = 只能抽一次）
+    // 最多可抽次数（1 = 只能抽一次；与奖池 weight 无关）
     maxDraws: 1,
     // 是否避免与上一次结果相同
     avoidConsecutiveRepeat: true,
     // 本地记录最近几条（0 表示不展示历史）
-    historyLimit: 5,
+    historyLimit: 0,
   },
 
   /**
@@ -53,7 +69,7 @@ window.GIFT_CONFIG = {
   challenge: {
     enabled: true,
     requireEveryDraw: false,
-    forceChallenge: true,
+    forceChallenge: false,
     shuffle: false,
     introTitle: "开箱前的档案题",
     introText:
@@ -95,8 +111,8 @@ window.GIFT_CONFIG = {
       id: "r3",
       type: "reward",
       weight: 12,
-      title: "电影之夜",
-      text: "一起看你想看的电影，零食我准备。",
+      title: "看视频",
+      text: "一起看你想看的视频，零食我准备。",
     },
     {
       id: "r4",
@@ -113,32 +129,11 @@ window.GIFT_CONFIG = {
       text: "听我认真夸你三分钟，不许打断。",
     },
     {
-      id: "p1",
-      type: "punish",
-      weight: 6,
-      title: "土味情话",
-      text: "现场对我说一句土味情话，说完不许笑，说不清就重来。",
-    },
-    {
-      id: "p2",
-      type: "punish",
-      weight: 12,
-      title: "专属称呼",
-      text: "接下来一小时，叫我一个我指定的称呼（不许害羞跳过）。",
-    },
-    {
       id: "p3",
       type: "punish",
       weight: 12,
       title: "清唱一曲",
       text: "当场唱一首歌给你听",
-    },
-    {
-      id: "p4",
-      type: "punish",
-      weight: 12,
-      title: "听令卡",
-      text: "接下来 30 分钟，合理范围内我说什么你做什么。",
     },
     {
       id: "s1",
@@ -152,7 +147,7 @@ window.GIFT_CONFIG = {
       type: "sweet",
       weight: 12,
       title: "今日复盘",
-      text: "认真听你讲今天发生的事，中途不看手机。",
+      text: "认真听你讲今天发生的事，中途不做任何事情。",
     },
     {
       id: "s3",

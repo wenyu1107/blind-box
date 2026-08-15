@@ -22,8 +22,27 @@
     </div>
 
     <main class="stage">
+      <!-- 开场密码 -->
+      <section class="panel panel-gate" id="panel-gate" hidden>
+        <p class="brand" id="gate-brand">周末盲盒</p>
+        <h1 class="gate-title" id="gate-title">先输入暗号</h1>
+        <p class="subtitle" id="gate-subtitle">输入正确才能进入周末盲盒～</p>
+        <form class="gate-form" id="gate-form">
+          <label class="sr-only" for="gate-input">密码</label>
+          <input
+            id="gate-input"
+            class="gate-input"
+            type="password"
+            autocomplete="off"
+            placeholder="请输入密码"
+          />
+          <button class="cta" id="gate-submit" type="submit">进入</button>
+        </form>
+        <p class="gate-feedback" id="gate-feedback" hidden></p>
+      </section>
+
       <!-- 首屏 -->
-      <section class="panel panel-hero" id="panel-hero" data-active="true">
+      <section class="panel panel-hero" id="panel-hero" hidden>
         <p class="brand" id="brand">周末盲盒</p>
         <h1 class="headline">
           <span class="nickname" id="nickname">亲爱的</span>

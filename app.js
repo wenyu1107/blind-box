@@ -19,16 +19,19 @@
   const STORAGE_KEY = "love-blind-box-history";
   const UNLOCK_KEY = "love-blind-box-unlocked";
   const DRAWN_KEY = "love-blind-box-drawn";
+  const GATE_KEY = "love-blind-box-gate";
   const OPENING_MS = 2200;
 
   const config = window.GIFT_CONFIG || {};
   const rules = config.rules || {};
   const challengeCfg = config.challenge || {};
+  const gateCfg = config.gate || {};
   const items = Array.isArray(config.items) ? config.items : [];
 
   let caseLibrary = null;
   let casesLoadError = null;
   let activeCaseId = challengeCfg.caseId || null;
+  let gatePassed = false;
 
   const els = {
     brand: document.getElementById("brand"),
@@ -42,6 +45,14 @@
     lockHint: document.getElementById("lock-hint"),
     casePicker: document.getElementById("case-picker"),
     caseSelect: document.getElementById("case-select"),
+    panelGate: document.getElementById("panel-gate"),
+    gateBrand: document.getElementById("gate-brand"),
+    gateTitle: document.getElementById("gate-title"),
+    gateSubtitle: document.getElementById("gate-subtitle"),
+    gateForm: document.getElementById("gate-form"),
+    gateInput: document.getElementById("gate-input"),
+    gateSubmit: document.getElementById("gate-submit"),
+    gateFeedback: document.getElementById("gate-feedback"),
     panelHero: document.getElementById("panel-hero"),
     panelChallenge: document.getElementById("panel-challenge"),
     panelOpening: document.getElementById("panel-opening"),
@@ -407,6 +418,7 @@
 
   function showPanel(name) {
     const map = {
+      gate: els.panelGate,
       hero: els.panelHero,
       challenge: els.panelChallenge,
       opening: els.panelOpening,
@@ -426,6 +438,90 @@
         delete panel.dataset.active;
       }
     });
+  }
+
+  function gateEnabled() {
+    return Boolean(gateCfg.enabled && String(gateCfg.password || "").length);
+  }
+
+  function loadGatePassed() {
+    if (!gateEnabled()) return true;
+    if (!gateCfg.remember) return false;
+    try {
+      return localStorage.getItem(GATE_KEY) === "1";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function persistGatePassed() {
+    if (!gateCfg.remember) return;
+    try {
+      localStorage.setItem(GATE_KEY, "1");
+    } catch (e) {
+      console.warn("保存密码状态失败:", e);
+    }
+  }
+
+  function applyGateCopy() {
+    if (!els.panelGate) return;
+    if (config.brand && els.gateBrand) els.gateBrand.textContent = config.brand;
+    if (gateCfg.title && els.gateTitle) els.gateTitle.textContent = gateCfg.title;
+    if (gateCfg.subtitle && els.gateSubtitle) {
+      els.gateSubtitle.textContent = gateCfg.subtitle;
+    }
+    if (gateCfg.placeholder && els.gateInput) {
+      els.gateInput.placeholder = gateCfg.placeholder;
+    }
+    if (gateCfg.submitLabel && els.gateSubmit) {
+      els.gateSubmit.textContent = gateCfg.submitLabel;
+    }
+  }
+
+  function enterAfterGate() {
+    gatePassed = true;
+    persistGatePassed();
+    syncHeroCta();
+    if (hasDrawn() && !canDrawMore() && !needsChallenge()) {
+      showDrawnResult();
+    } else {
+      showPanel("hero");
+    }
+  }
+
+  function onGateSubmit(event) {
+    event.preventDefault();
+    if (!gateEnabled()) {
+      enterAfterGate();
+      return;
+    }
+    const input = String((els.gateInput && els.gateInput.value) || "").trim();
+    const expect = String(gateCfg.password || "").trim();
+    if (input === expect) {
+      if (els.gateFeedback) {
+        els.gateFeedback.hidden = true;
+      }
+      enterAfterGate();
+      return;
+    }
+    if (els.gateFeedback) {
+      els.gateFeedback.hidden = false;
+      els.gateFeedback.textContent = gateCfg.failText || "密码不对";
+    }
+    if (els.gateInput) {
+      els.gateInput.value = "";
+      els.gateInput.focus();
+    }
+  }
+
+  function goHome() {
+    if (drawing) return;
+    if (gateEnabled() && !gatePassed) {
+      showPanel("gate");
+      return;
+    }
+    syncHeroCta();
+    showPanel("hero");
   }
 
   function itemWeight(item) {
@@ -963,13 +1059,11 @@
     }, OPENING_MS);
   }
 
-  function goHome() {
-    if (drawing) return;
-    syncHeroCta();
-    showPanel("hero");
-  }
-
   function onHeroAction() {
+    if (!gatePassed && gateEnabled()) {
+      showPanel("gate");
+      return;
+    }
     if (casesLoadError) {
       casesLoadError = null;
       caseLibrary = null;
@@ -1004,6 +1098,11 @@
         showDrawnResult();
         return;
       }
+      // maxDraws=1 时按钮本身已隐藏；这里再挡一层
+      if (Number.isFinite(maxDraws()) && maxDraws() <= 1) {
+        showDrawnResult();
+        return;
+      }
       if (challengeCfg.requireEveryDraw) {
         unlocked = false;
         syncHeroCta();
@@ -1017,6 +1116,9 @@
     if (els.challengeNextBtn) {
       els.challengeNextBtn.addEventListener("click", onNextQuestion);
     }
+    if (els.gateForm) {
+      els.gateForm.addEventListener("submit", onGateSubmit);
+    }
     if (els.caseSelect) {
       els.caseSelect.addEventListener("change", function () {
         activeCaseId = els.caseSelect.value;
@@ -1029,10 +1131,13 @@
 
   function init() {
     applyCopy();
+    applyGateCopy();
     createSparkles();
     renderHistory();
     syncResultActions();
     bindEvents();
+
+    gatePassed = loadGatePassed();
 
     const boot = challengeEnabled()
       ? ensureQuestions().catch(function (err) {
@@ -1050,7 +1155,12 @@
       }
       syncHeroCta();
 
-      // 已抽过且本案件已解锁：直接展示结果
+      if (gateEnabled() && !gatePassed) {
+        showPanel("gate");
+        if (els.gateInput) els.gateInput.focus();
+        return;
+      }
+
       if (hasDrawn() && !canDrawMore() && !needsChallenge()) {
         showDrawnResult();
       } else {
