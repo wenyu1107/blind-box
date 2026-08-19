@@ -50,6 +50,8 @@
     if (!enabled()) {
       return Promise.reject(new Error("云端墙未配置"));
     }
+    const cfg = wallCfg();
+    const timeoutMs = Number(cfg.timeoutMs) > 0 ? Number(cfg.timeoutMs) : 8000;
     const headers = {
       Authorization: "Bearer " + token(),
     };
@@ -58,14 +60,34 @@
       headers["Content-Type"] = "application/json";
       opts.body = JSON.stringify(body);
     }
-    return fetch(endpoint(), opts).then(function (res) {
-      return res.json().then(function (data) {
-        if (!res.ok) {
-          throw new Error((data && data.error) || "同步失败");
-        }
-        return data;
+    const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+    let timer = null;
+    if (controller) {
+      opts.signal = controller.signal;
+      timer = window.setTimeout(function () {
+        controller.abort();
+      }, timeoutMs);
+    }
+    return fetch(endpoint(), opts)
+      .then(function (res) {
+        return res.text().then(function (text) {
+          let data = {};
+          if (text) {
+            try {
+              data = JSON.parse(text);
+            } catch (e) {
+              data = { error: "返回不是 JSON" };
+            }
+          }
+          if (!res.ok) {
+            throw new Error((data && data.error) || "同步失败");
+          }
+          return data;
+        });
+      })
+      .finally(function () {
+        if (timer) window.clearTimeout(timer);
       });
-    });
   }
 
   function pull() {

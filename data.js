@@ -97,6 +97,8 @@ window.GIFT_CONFIG = {
     wall: {
       enabled: true,
       url: "https://puppy-wall.wenyucs.workers.dev",
+      // 国内访问 workers.dev 可能慢，8 秒连不上就先用本机
+      timeoutMs: 8000,
     },
   },
 

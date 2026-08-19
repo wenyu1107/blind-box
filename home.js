@@ -89,6 +89,7 @@
   let wallPushTimer = null;
   let wallPollTimer = null;
   let wallReady = false;
+  let wallPaused = false;
 
   function loadJson(key, fallback) {
     try {
@@ -335,7 +336,7 @@
       function () {
         if (!saved) onFound(39.9, 116.4);
       },
-      { timeout: 4000, maximumAge: 86400000 }
+      { timeout: 3000, maximumAge: 86400000 }
     );
   }
 
@@ -346,7 +347,16 @@
       "&longitude=" +
       lon +
       "&current=weather_code,temperature_2m&timezone=auto";
-    fetch(url)
+    const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+    let timer = null;
+    const opts = {};
+    if (controller) {
+      opts.signal = controller.signal;
+      timer = window.setTimeout(function () {
+        controller.abort();
+      }, 8000);
+    }
+    fetch(url, opts)
       .then(function (res) {
         return res.json();
       })
@@ -365,6 +375,9 @@
         if (els.windowLabel) {
           els.windowLabel.textContent = "天气还没看清，先摸摸小狗吧";
         }
+      })
+      .finally(function () {
+        if (timer) window.clearTimeout(timer);
       });
   }
 
@@ -719,7 +732,7 @@
   }
 
   function scheduleWallPush() {
-    if (!window.PuppyWall || !window.PuppyWall.enabled() || !wallReady) return;
+    if (!window.PuppyWall || !window.PuppyWall.enabled() || !wallReady || wallPaused) return;
     window.clearTimeout(wallPushTimer);
     wallPushTimer = window.setTimeout(function () {
       window.PuppyWall.put(wallSnapshot())
@@ -739,11 +752,11 @@
       setWallStatus("");
       return;
     }
-    setWallStatus("正在对齐共用墙…");
+    wallReady = true;
+    setWallStatus("正在后台对齐共用墙…");
     window.PuppyWall.pull()
       .then(function (state) {
         applyRemoteWall(state);
-        wallReady = true;
         return window.PuppyWall.put(wallSnapshot());
       })
       .then(function (merged) {
@@ -752,21 +765,26 @@
       })
       .catch(function (err) {
         console.warn("拉取共用墙失败:", err);
-        wallReady = true;
-        setWallStatus("云端暂时连不上，先用这台设备");
+        wallPaused = true;
+        if (wallPollTimer) {
+          window.clearInterval(wallPollTimer);
+          wallPollTimer = null;
+        }
+        setWallStatus("云端连不上，先用本机（国内可能较慢）");
       });
     if (wallPollTimer) window.clearInterval(wallPollTimer);
     wallPollTimer = window.setInterval(function () {
-      if (!window.PuppyWall.enabled() || isEditingShared()) return;
+      if (!window.PuppyWall.enabled() || wallPaused || isEditingShared()) return;
       window.PuppyWall.pull()
         .then(function (state) {
           applyRemoteWall(state);
+          wallPaused = false;
           setWallStatus("两个人同一面墙，已同步");
         })
         .catch(function (err) {
           console.warn("刷新共用墙失败:", err);
         });
-    }, 15000);
+    }, 30000);
   }
 
   function enterHub() {
