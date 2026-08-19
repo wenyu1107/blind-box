@@ -96,7 +96,7 @@ window.GIFT_CONFIG = {
      */
     wall: {
       enabled: true,
-      url: "",
+      url: "https://puppy-wall.wenyucs.workers.dev",
     },
   },
 
@@ -106,7 +106,7 @@ window.GIFT_CONFIG = {
    */
   gate: {
     enabled: true,
-    password: "19981005",
+    password: "qwyz",
     title: "先输入密码",
     subtitle: "输入正确才能进入小狗屋～",
     placeholder: "请输入密码",
