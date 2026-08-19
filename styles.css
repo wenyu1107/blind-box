@@ -49,6 +49,25 @@ button {
   color: inherit;
 }
 
+.hub-link {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top));
+  left: max(14px, env(safe-area-inset-left));
+  z-index: 5;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 244, 236, 0.35);
+  background: rgba(42, 21, 18, 0.35);
+  color: var(--cream);
+  text-decoration: none;
+  font-size: 0.88rem;
+  letter-spacing: 0.04em;
+}
+
+.hub-link:hover {
+  background: rgba(42, 21, 18, 0.55);
+}
+
 .atmosphere {
   position: fixed;
   inset: 0;

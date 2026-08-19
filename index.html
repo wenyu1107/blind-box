@@ -3,165 +3,268 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#c45c4a" />
-    <title>周末盲盒</title>
+    <meta name="theme-color" content="#f4efe6" />
+    <title>小狗屋</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Noto+Sans+SC:wght@400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./home.css" />
   </head>
-  <body>
-    <div class="atmosphere" aria-hidden="true">
-      <div class="glow glow-a"></div>
-      <div class="glow glow-b"></div>
-      <div class="grain"></div>
-      <div class="sparkles" id="sparkles"></div>
+  <body class="hub theme-line">
+    <svg class="sr-only" aria-hidden="true">
+      <symbol id="line-pup" viewBox="0 0 80 72">
+        <g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <ellipse cx="40" cy="44" rx="22" ry="16" />
+          <circle cx="40" cy="24" r="13" />
+          <path d="M28 16c-6-8-14-6-12 2" />
+          <path d="M52 16c6-8 14-6 12 2" />
+          <circle cx="35" cy="23" r="1.4" fill="currentColor" />
+          <circle cx="45" cy="23" r="1.4" fill="currentColor" />
+          <path d="M38 28h4" />
+          <path d="M36 31c2 2 6 2 8 0" />
+          <path d="M24 52v12" />
+          <path d="M32 56v12" />
+          <path d="M48 56v12" />
+          <path d="M56 52v12" />
+          <path d="M60 42c8 2 10 10 4 12" />
+        </g>
+      </symbol>
+      <symbol id="cute-pup" viewBox="0 0 90 86">
+        <ellipse cx="45" cy="78" rx="18" ry="5" fill="#e8c4b0" opacity="0.45" />
+        <ellipse cx="45" cy="50" rx="24" ry="20" fill="#f3d2b3" />
+        <circle cx="45" cy="30" r="16" fill="#f7d7b8" />
+        <ellipse cx="30" cy="18" rx="8" ry="12" fill="#e2b48a" transform="rotate(-18 30 18)" />
+        <ellipse cx="60" cy="18" rx="8" ry="12" fill="#e2b48a" transform="rotate(18 60 18)" />
+        <ellipse cx="31" cy="20" rx="4" ry="7" fill="#f6c1c8" transform="rotate(-18 31 20)" />
+        <ellipse cx="59" cy="20" rx="4" ry="7" fill="#f6c1c8" transform="rotate(18 59 20)" />
+        <circle cx="39" cy="29" r="3.2" fill="#4a3228" />
+        <circle cx="51" cy="29" r="3.2" fill="#4a3228" />
+        <circle cx="40" cy="28" r="1" fill="#fff" />
+        <circle cx="52" cy="28" r="1" fill="#fff" />
+        <ellipse cx="37" cy="34" rx="4" ry="2.4" fill="#ffb3c1" opacity="0.85" />
+        <ellipse cx="53" cy="34" rx="4" ry="2.4" fill="#ffb3c1" opacity="0.85" />
+        <ellipse cx="45" cy="35" rx="3.2" ry="2.2" fill="#5b3a30" />
+        <path d="M43 38c1.4 2 4.6 2 6 0" fill="none" stroke="#5b3a30" stroke-width="1.4" stroke-linecap="round" />
+        <path d="M58 8c2-6 8-4 7 2" fill="none" stroke="#ee8aa0" stroke-width="2" stroke-linecap="round" />
+        <circle cx="66" cy="8" r="3.2" fill="#ee8aa0" />
+        <path d="M28 62v14" stroke="#e2b48a" stroke-width="5" stroke-linecap="round" />
+        <path d="M38 64v14" stroke="#e2b48a" stroke-width="5" stroke-linecap="round" />
+        <path d="M52 64v14" stroke="#e2b48a" stroke-width="5" stroke-linecap="round" />
+        <path d="M62 62v14" stroke="#e2b48a" stroke-width="5" stroke-linecap="round" />
+        <path d="M66 48c10 4 12 14 4 16" fill="none" stroke="#e2b48a" stroke-width="5" stroke-linecap="round" />
+      </symbol>
+      <symbol id="paw-stamp" viewBox="0 0 64 64">
+        <ellipse cx="32" cy="42" rx="13" ry="11" fill="currentColor" />
+        <circle cx="16" cy="24" r="6.2" fill="currentColor" />
+        <circle cx="32" cy="16" r="6.4" fill="currentColor" />
+        <circle cx="48" cy="24" r="6.2" fill="currentColor" />
+        <circle cx="14" cy="38" r="5.4" fill="currentColor" />
+      </symbol>
+      <symbol id="moon-lamp" viewBox="0 0 80 72">
+        <path
+          d="M50 12a26 26 0 1 0 10 46 22 22 0 0 1-10-46z"
+          fill="currentColor"
+        />
+        <circle cx="58" cy="18" r="2.2" fill="currentColor" opacity="0.7" />
+        <circle cx="66" cy="30" r="1.6" fill="currentColor" opacity="0.7" />
+      </symbol>
+    </svg>
+
+    <section class="gate-screen" id="gate-screen">
+      <div class="gate-card">
+        <svg class="gate-mascot line-only" viewBox="0 0 80 72"><use href="#line-pup"></use></svg>
+        <svg class="gate-mascot cute-only" viewBox="0 0 90 86"><use href="#cute-pup"></use></svg>
+        <h1 class="gate-title" id="gate-title">先输入密码</h1>
+        <p class="gate-sub" id="gate-sub">输入正确才能进入小狗屋～</p>
+        <form id="gate-form">
+          <input id="gate-input" class="line-input gate-input" type="password" autocomplete="off" placeholder="请输入密码" />
+          <button class="line-btn" type="submit">进入</button>
+        </form>
+        <p class="gate-fail" id="gate-fail" hidden>暗号不对，再试试～</p>
+      </div>
+    </section>
+
+    <div id="hub-shell" hidden>
+      <div class="paper" aria-hidden="true"></div>
+      <div class="weather-veil" id="weather-veil" aria-hidden="true"></div>
+      <div class="night-lamps" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="doodles" aria-hidden="true">
+        <svg class="pup pup-a line-only" viewBox="0 0 80 72"><use href="#line-pup"></use></svg>
+        <svg class="pup pup-b line-only" viewBox="0 0 80 72"><use href="#line-pup"></use></svg>
+        <svg class="pup pup-c line-only" viewBox="0 0 80 72"><use href="#line-pup"></use></svg>
+        <svg class="pup pup-a cute-only" viewBox="0 0 90 86"><use href="#cute-pup"></use></svg>
+        <svg class="pup pup-b cute-only" viewBox="0 0 90 86"><use href="#cute-pup"></use></svg>
+        <svg class="pup pup-c cute-only" viewBox="0 0 90 86"><use href="#cute-pup"></use></svg>
+      </div>
+
+      <header class="hub-top">
+        <p class="hub-kicker" id="hub-date">今天</p>
+        <h1 class="hub-title" id="hub-title">小狗屋</h1>
+        <p class="hub-sub" id="hub-sub">一间会呼吸的小屋。摸摸小狗，看看窗外。</p>
+        <p class="wall-status" id="wall-status" hidden></p>
+        <button class="line-btn tiny theme-entry" id="theme-open" type="button">更换主题</button>
+      </header>
+
+      <main class="hub-main" id="hub-home">
+        <section class="living-row">
+          <article class="window-card" aria-label="天气窗">
+            <div class="window-frame">
+              <div class="window-sky" id="window-sky">
+                <span class="window-sun"></span>
+                <span class="window-cloud c1"></span>
+                <span class="window-cloud c2"></span>
+                <div class="window-fx" id="window-fx"></div>
+              </div>
+              <span class="window-sash"></span>
+            </div>
+            <p class="window-temp" id="window-temp">窗外</p>
+            <p class="window-label" id="window-label">正在看看天气</p>
+          </article>
+
+          <section class="clock-card" aria-label="时钟">
+            <div class="clock-face" id="clock-face">
+              <span class="clock-tick"></span>
+              <span class="clock-tick"></span>
+              <span class="clock-tick"></span>
+              <span class="clock-tick"></span>
+              <div class="clock-hand hour" id="hand-hour"></div>
+              <div class="clock-hand minute" id="hand-minute"></div>
+              <div class="clock-hand second" id="hand-second"></div>
+              <div class="clock-dot"></div>
+              <svg class="clock-pup line-only" viewBox="0 0 80 72"><use href="#line-pup"></use></svg>
+              <svg class="clock-pup cute-only" viewBox="0 0 90 86"><use href="#cute-pup"></use></svg>
+            </div>
+            <p class="clock-digital" id="clock-digital">00:00:00</p>
+            <p class="clock-weekday" id="clock-weekday">星期</p>
+          </section>
+
+          <article class="mood-card">
+            <button class="mood-dog" id="mood-dog" type="button" aria-label="摸摸小狗">
+              <svg class="line-only" viewBox="0 0 80 72"><use href="#line-pup"></use></svg>
+              <svg class="cute-only" viewBox="0 0 90 86"><use href="#cute-pup"></use></svg>
+            </button>
+            <p class="mood-kicker">今天的小狗</p>
+            <p class="mood-text" id="mood-text">今天想被摸摸</p>
+            <p class="mood-hint">点它，尾巴会摇</p>
+          </article>
+        </section>
+
+        <section class="life-row">
+          <article class="week-card">
+            <h2 class="widget-title">这周一件小事</h2>
+            <p class="week-range" id="week-range">本周</p>
+            <textarea
+              id="week-note"
+              class="week-note"
+              maxlength="80"
+              placeholder="比如：周日一起去买花"
+            ></textarea>
+            <p class="week-save" id="week-save">写完会自己贴在墙上</p>
+          </article>
+
+          <article class="stamp-card">
+            <h2 class="widget-title">周末爪印</h2>
+            <p class="stamp-hint" id="stamp-hint">拆过盲盒就会盖一枚。</p>
+            <div class="stamp-wall" id="stamp-wall"></div>
+          </article>
+        </section>
+
+        <section class="widget-row">
+          <article class="widget alarm-widget">
+            <h2 class="widget-title">
+              <span>闹钟</span>
+              <svg class="widget-pup line-only" viewBox="0 0 80 72"><use href="#line-pup"></use></svg>
+              <svg class="widget-pup cute-only" viewBox="0 0 90 86"><use href="#cute-pup"></use></svg>
+            </h2>
+            <form class="alarm-form" id="alarm-form">
+              <input id="alarm-time" class="line-input" type="time" required />
+              <input id="alarm-label" class="line-input" type="text" maxlength="20" placeholder="叫我起床…" />
+              <button class="line-btn" type="submit">加上</button>
+            </form>
+            <ul class="alarm-list" id="alarm-list"></ul>
+          </article>
+
+          <article class="widget note-widget">
+            <h2 class="widget-title">
+              <span>便签</span>
+              <button class="line-btn tiny" id="note-add" type="button">新便签</button>
+            </h2>
+            <div class="note-board" id="note-board"></div>
+          </article>
+        </section>
+
+        <section class="feature-dock" aria-label="功能入口">
+          <div class="dock-head">
+            <h2 class="dock-title">门口</h2>
+            <button class="line-btn tiny" id="room-add" type="button">+ 新房间</button>
+          </div>
+          <p class="dock-hint" id="weekend-hint"></p>
+          <form class="room-form" id="room-form" hidden>
+            <input id="room-title" class="line-input" type="text" maxlength="16" placeholder="房间名字，比如：想吃的" required />
+            <input id="room-desc" class="line-input" type="text" maxlength="30" placeholder="门口小字（可选）" />
+            <button class="line-btn" type="submit">放门口</button>
+            <button class="ghost-mini" id="room-cancel" type="button">取消</button>
+          </form>
+          <div class="feature-grid" id="feature-grid"></div>
+        </section>
+      </main>
+
+      <section class="page-screen" id="page-screen" hidden>
+        <div class="page-card">
+          <div class="page-toolbar">
+            <button class="line-btn tiny" id="page-back" type="button">回小狗屋</button>
+            <p class="page-save" id="page-save">会自动保存</p>
+          </div>
+          <input id="page-title" class="page-title-input" type="text" maxlength="24" placeholder="这一页的名字" />
+          <textarea id="page-body" class="page-body" placeholder="在这里随便写。想写给谁、想吃什么、今天发生的事都可以。"></textarea>
+        </div>
+      </section>
     </div>
 
-    <main class="stage">
-      <!-- 开场密码 -->
-      <section class="panel panel-gate" id="panel-gate" hidden>
-        <p class="brand" id="gate-brand">周末盲盒</p>
-        <h1 class="gate-title" id="gate-title">先输入暗号</h1>
-        <p class="subtitle" id="gate-subtitle">输入正确才能进入周末盲盒～</p>
-        <form class="gate-form" id="gate-form">
-          <label class="sr-only" for="gate-input">密码</label>
-          <input
-            id="gate-input"
-            class="gate-input"
-            type="password"
-            autocomplete="off"
-            placeholder="请输入密码"
-          />
-          <button class="cta" id="gate-submit" type="submit">进入</button>
-        </form>
-        <p class="gate-feedback" id="gate-feedback" hidden></p>
-      </section>
-
-      <!-- 首屏 -->
-      <section class="panel panel-hero" id="panel-hero" hidden>
-        <p class="brand" id="brand">周末盲盒</p>
-        <h1 class="headline">
-          <span class="nickname" id="nickname">亲爱的</span>
-          <span class="headline-text" id="headline">今天的惊喜，拆开才知道</span>
-        </h1>
-        <p class="subtitle" id="subtitle">
-          先解开谜题，才能拆开我们之间的小奖励、小惩罚，或一件甜蜜小事。
-        </p>
-
-        <div class="gift-wrap">
-          <button class="gift-box is-locked" id="open-btn" type="button" aria-label="拆开盲盒">
-            <span class="gift-lock" id="gift-lock" aria-hidden="true"></span>
-            <span class="gift-shadow"></span>
-            <span class="gift-body">
-              <span class="gift-lid">
-                <span class="gift-bow"></span>
-              </span>
-              <span class="gift-base"></span>
-              <span class="gift-ribbon-v"></span>
-              <span class="gift-ribbon-h"></span>
-            </span>
+    <div class="theme-overlay" id="theme-overlay" hidden>
+      <div class="theme-pop">
+        <h2>换一套小狗屋</h2>
+        <p>白天两只小狗，晚上可以关灯回家。选中后会记住。</p>
+        <div class="theme-choices">
+          <button class="theme-card" data-theme="line" type="button">
+            <svg viewBox="0 0 80 72"><use href="#line-pup"></use></svg>
+            <strong>线条小狗</strong>
+            <span>纸面速写</span>
+          </button>
+          <button class="theme-card" data-theme="puppy" type="button">
+            <svg viewBox="0 0 90 86"><use href="#cute-pup"></use></svg>
+            <strong>软萌小狗</strong>
+            <span>圆滚滚更可爱</span>
+          </button>
+          <button class="theme-card" data-theme="night" type="button">
+            <svg viewBox="0 0 80 72"><use href="#moon-lamp"></use></svg>
+            <strong>关灯回家</strong>
+            <span>深蓝和小灯</span>
           </button>
         </div>
+        <button class="line-btn" id="theme-close" type="button">好了</button>
+      </div>
+    </div>
 
-        <div class="case-picker" id="case-picker" hidden>
-          <label class="case-picker-label" for="case-select">选择案件</label>
-          <select id="case-select" class="case-select"></select>
-        </div>
-
-        <p class="lock-hint" id="lock-hint">盲盒已上锁，先通过解密考验</p>
-        <button class="cta" id="cta-btn" type="button">开始解密</button>
-      </section>
-
-      <!-- 解密关卡 -->
-      <section class="panel panel-challenge" id="panel-challenge" hidden>
-        <p class="challenge-kicker" id="challenge-kicker">开箱前的小考验</p>
-        <p class="challenge-intro" id="challenge-intro"></p>
-
-        <div class="challenge-progress" id="challenge-progress" aria-live="polite"></div>
-
-        <article class="challenge-card" id="challenge-card">
-          <div class="challenge-meta">
-            <span class="challenge-kind" id="challenge-kind">侦探题</span>
-            <span class="challenge-step" id="challenge-step">1 / 3</span>
-          </div>
-          <h2 class="challenge-title" id="challenge-title">题目</h2>
-          <div class="challenge-story" id="challenge-story" hidden></div>
-          <div class="challenge-evidence" id="challenge-evidence" hidden>
-            <p class="evidence-label">证物档案（点开查阅，建议全部看完）</p>
-            <div class="evidence-list" id="evidence-list"></div>
-          </div>
-          <p class="challenge-prompt" id="challenge-prompt"></p>
-
-          <div class="challenge-choices" id="challenge-choices" hidden></div>
-
-          <form class="challenge-form" id="challenge-form" hidden>
-            <label class="sr-only" for="challenge-input">你的答案</label>
-            <input
-              id="challenge-input"
-              class="challenge-input"
-              type="text"
-              autocomplete="off"
-              placeholder="写下你的推理…"
-            />
-            <button class="cta challenge-submit" id="challenge-submit" type="submit">提交答案</button>
-          </form>
-
-          <div class="challenge-tools">
-            <button class="ghost challenge-hint-btn" id="challenge-hint-btn" type="button">看提示</button>
-          </div>
-          <p class="challenge-hint" id="challenge-hint" hidden></p>
-          <p class="challenge-feedback" id="challenge-feedback" hidden></p>
-          <button class="cta challenge-next-btn" id="challenge-next-btn" type="button" hidden>
-            下一题
-          </button>
-        </article>
-
-        <button class="ghost" id="challenge-back-btn" type="button">返回首页</button>
-      </section>
-
-      <!-- 开箱中 -->
-      <section class="panel panel-opening" id="panel-opening" hidden>
-        <p class="opening-hint">正在拆开…</p>
-        <div class="gift-wrap gift-wrap-opening">
-          <div class="gift-box is-opening" aria-hidden="true">
-            <span class="gift-shadow"></span>
-            <span class="gift-body">
-              <span class="gift-lid">
-                <span class="gift-bow"></span>
-              </span>
-              <span class="gift-base"></span>
-              <span class="gift-ribbon-v"></span>
-              <span class="gift-ribbon-h"></span>
-            </span>
-            <span class="burst"></span>
-          </div>
-        </div>
-      </section>
-
-      <!-- 结果 -->
-      <section class="panel panel-result" id="panel-result" hidden>
-        <article class="result-card" id="result-card">
-          <p class="result-type" id="result-type">奖励</p>
-          <h2 class="result-title" id="result-title">愿望卡</h2>
-          <p class="result-text" id="result-text">一个小愿望，无条件答应。</p>
-        </article>
-        <p class="drawn-note" id="drawn-note" hidden>今天已经抽过啦，结果不会变哦～</p>
-        <div class="result-actions">
-          <button class="cta" id="again-btn" type="button" hidden>再抽一次</button>
-          <button class="ghost" id="home-btn" type="button">回到首页</button>
-        </div>
-        <aside class="history" id="history" hidden>
-          <p class="history-label">最近抽到</p>
-          <ul class="history-list" id="history-list"></ul>
-        </aside>
-      </section>
-    </main>
+    <div class="alarm-overlay" id="alarm-overlay" hidden>
+      <div class="alarm-pop">
+        <svg class="alarm-pop-pup line-only" viewBox="0 0 80 72"><use href="#line-pup"></use></svg>
+        <svg class="alarm-pop-pup cute-only" viewBox="0 0 90 86"><use href="#cute-pup"></use></svg>
+        <p class="alarm-pop-label" id="alarm-pop-label">闹钟响了</p>
+        <button class="line-btn" id="alarm-stop" type="button">关掉</button>
+      </div>
+    </div>
 
     <script src="./data.js"></script>
-    <script src="./app.js"></script>
+    <script src="./wall.js"></script>
+    <script src="./home.js"></script>
   </body>
 </html>

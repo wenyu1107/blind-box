@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#c45c4a" />
+    <title>周末盲盒</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="hub-link" href="./index.html">← 小狗屋</a>
+    <div class="atmosphere" aria-hidden="true">
+      <div class="glow glow-a"></div>
+      <div class="glow glow-b"></div>
+      <div class="grain"></div>
+      <div class="sparkles" id="sparkles"></div>
+    </div>
+    <main class="stage">
+      <section class="panel panel-gate" id="panel-gate" hidden>
+        <p class="brand" id="gate-brand">周末盲盒</p>
+        <h1 class="gate-title" id="gate-title">先输入暗号</h1>
+        <p class="subtitle" id="gate-subtitle">输入正确才能进入周末盲盒～</p>
+        <form class="gate-form" id="gate-form">
+          <label class="sr-only" for="gate-input">密码</label>
+          <input id="gate-input" class="gate-input" type="password" autocomplete="off" placeholder="请输入密码" />
+          <button class="cta" id="gate-submit" type="submit">进入</button>
+        </form>
+        <p class="gate-feedback" id="gate-feedback" hidden></p>
+      </section>
+      <section class="panel panel-hero" id="panel-hero" hidden>
+        <p class="brand" id="brand">周末盲盒</p>
+        <h1 class="headline">
+          <span class="nickname" id="nickname">亲爱的</span>
+          <span class="headline-text" id="headline">今天的惊喜，拆开才知道</span>
+        </h1>
+        <p class="subtitle" id="subtitle">先解开谜题，才能拆开我们之间的小奖励、小惩罚，或一件甜蜜小事。</p>
+        <div class="gift-wrap">
+          <button class="gift-box is-locked" id="open-btn" type="button" aria-label="拆开盲盒">
+            <span class="gift-lock" id="gift-lock" aria-hidden="true"></span>
+            <span class="gift-shadow"></span>
+            <span class="gift-body">
+              <span class="gift-lid"><span class="gift-bow"></span></span>
+              <span class="gift-base"></span>
+              <span class="gift-ribbon-v"></span>
+              <span class="gift-ribbon-h"></span>
+            </span>
+          </button>
+        </div>
+        <div class="case-picker" id="case-picker" hidden>
+          <label class="case-picker-label" for="case-select">选择案件</label>
+          <select id="case-select" class="case-select"></select>
+        </div>
+        <p class="lock-hint" id="lock-hint">盲盒已上锁，先通过解密考验</p>
+        <button class="cta" id="cta-btn" type="button">开始解密</button>
+      </section>
+      <section class="panel panel-challenge" id="panel-challenge" hidden>
+        <p class="challenge-kicker" id="challenge-kicker">开箱前的小考验</p>
+        <p class="challenge-intro" id="challenge-intro"></p>
+        <div class="challenge-progress" id="challenge-progress" aria-live="polite"></div>
+        <article class="challenge-card" id="challenge-card">
+          <div class="challenge-meta">
+            <span class="challenge-kind" id="challenge-kind">侦探题</span>
+            <span class="challenge-step" id="challenge-step">1 / 3</span>
+          </div>
+          <h2 class="challenge-title" id="challenge-title">题目</h2>
+          <div class="challenge-story" id="challenge-story" hidden></div>
+          <div class="challenge-evidence" id="challenge-evidence" hidden>
+            <p class="evidence-label">证物档案（点开查阅，建议全部看完）</p>
+            <div class="evidence-list" id="evidence-list"></div>
+          </div>
+          <p class="challenge-prompt" id="challenge-prompt"></p>
+          <div class="challenge-choices" id="challenge-choices" hidden></div>
+          <form class="challenge-form" id="challenge-form" hidden>
+            <label class="sr-only" for="challenge-input">你的答案</label>
+            <input id="challenge-input" class="challenge-input" type="text" autocomplete="off" placeholder="写下你的推理…" />
+            <button class="cta challenge-submit" id="challenge-submit" type="submit">提交答案</button>
+          </form>
+          <div class="challenge-tools">
+            <button class="ghost challenge-hint-btn" id="challenge-hint-btn" type="button">看提示</button>
+          </div>
+          <p class="challenge-hint" id="challenge-hint" hidden></p>
+          <p class="challenge-feedback" id="challenge-feedback" hidden></p>
+          <button class="cta challenge-next-btn" id="challenge-next-btn" type="button" hidden>下一题</button>
+        </article>
+        <button class="ghost" id="challenge-back-btn" type="button">返回开箱页</button>
+      </section>
+      <section class="panel panel-opening" id="panel-opening" hidden>
+        <p class="opening-hint">正在拆开…</p>
+        <div class="gift-wrap gift-wrap-opening">
+          <div class="gift-box is-opening" aria-hidden="true">
+            <span class="gift-shadow"></span>
+            <span class="gift-body">
+              <span class="gift-lid"><span class="gift-bow"></span></span>
+              <span class="gift-base"></span>
+              <span class="gift-ribbon-v"></span>
+              <span class="gift-ribbon-h"></span>
+            </span>
+            <span class="burst"></span>
+          </div>
+        </div>
+      </section>
+      <section class="panel panel-result" id="panel-result" hidden>
+        <article class="result-card" id="result-card">
+          <p class="result-type" id="result-type">奖励</p>
+          <h2 class="result-title" id="result-title">愿望卡</h2>
+          <p class="result-text" id="result-text">一个小愿望，无条件答应。</p>
+        </article>
+        <p class="drawn-note" id="drawn-note" hidden>今天已经抽过啦，结果不会变哦～</p>
+        <div class="result-actions">
+          <button class="cta" id="again-btn" type="button" hidden>再抽一次</button>
+          <button class="ghost" id="home-btn" type="button">回到开箱页</button>
+        </div>
+        <aside class="history" id="history" hidden>
+          <p class="history-label">最近抽到</p>
+          <ul class="history-list" id="history-list"></ul>
+        </aside>
+      </section>
+    </main>
+    <script src="./data.js"></script>
+    <script src="./wall.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

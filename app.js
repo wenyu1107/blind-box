@@ -194,6 +194,34 @@
     }
   }
 
+  function persistPawStamp(dS) {
+    const key = "puppy-house-stamps";
+    let stamps = [];
+    try {
+      const raw = localStorage.getItem(key);
+      stamps = raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      stamps = [];
+    }
+    if (!Array.isArray(stamps)) stamps = [];
+    const exists = stamps.some(function (item) {
+      return item && item.d_s === dS;
+    });
+    if (!exists) {
+      stamps.push({ d_s: dS, at: Date.now() });
+      try {
+        localStorage.setItem(key, JSON.stringify(stamps.slice(-24)));
+      } catch (e) {
+        console.warn("保存爪印失败:", e);
+      }
+    }
+    if (window.PuppyWall && window.PuppyWall.enabled()) {
+      window.PuppyWall.put({ stamps: stamps.slice(-24) }).catch(function (err) {
+        console.warn("同步爪印失败:", err);
+      });
+    }
+  }
+
   function hasDrawn() {
     // 重新按当天规则读一次，避免跨天仍占着旧结果
     drawnRecord = loadDrawnRecord();
@@ -484,6 +512,11 @@
 
   function loadGatePassed() {
     if (!gateEnabled()) return true;
+    try {
+      if (sessionStorage.getItem(GATE_KEY) === "1") return true;
+    } catch (e) {
+      // ignore
+    }
     if (!gateCfg.remember) return false;
     try {
       return localStorage.getItem(GATE_KEY) === "1";
@@ -493,6 +526,11 @@
   }
 
   function persistGatePassed() {
+    try {
+      sessionStorage.setItem(GATE_KEY, "1");
+    } catch (e) {
+      // ignore
+    }
     if (!gateCfg.remember) return;
     try {
       localStorage.setItem(GATE_KEY, "1");
@@ -1031,6 +1069,7 @@
     setDrawButtonsDisabled(true);
     lastItemId = item.id;
     persistDrawnRecord(item);
+    persistPawStamp(todayKey());
     pushHistory(item);
     syncResultActions();
     syncHeroCta();
@@ -1116,6 +1155,14 @@
   }
 
   function init() {
+    const homeCfg = config.home || {};
+    if (homeCfg.weekendOnly !== false && typeof window.giftIsNonWorkday === "function") {
+      if (!window.giftIsNonWorkday(new Date())) {
+        window.location.replace("./index.html");
+        return;
+      }
+    }
+
     applyCopy();
     applyGateCopy();
     createSparkles();
@@ -1124,6 +1171,7 @@
     bindEvents();
 
     gatePassed = loadGatePassed();
+    if (hasDrawn()) persistPawStamp(todayKey());
 
     const boot = challengeEnabled()
       ? ensureQuestions().catch(function (err) {
