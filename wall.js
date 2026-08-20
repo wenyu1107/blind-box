@@ -1,6 +1,6 @@
 // -*- coding: utf-8 -*-
 /**
- * 小狗屋云端墙：把便签、小事、爪印、房间同步到 Cloudflare Worker。
+ * 小狗屋云端墙：同步到 CloudBase 云函数 / Cloudflare Worker（同一套 GET/PUT + Bearer）。
  */
 (function (global) {
   "use strict";

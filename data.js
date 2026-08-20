@@ -90,14 +90,16 @@ window.GIFT_CONFIG = {
       },
     ],
     /**
-     * 两人同一面墙（Cloudflare Worker）
-     * 把 url 换成你的 Worker 地址后，便签/小事/爪印/房间会云端共用。
-     * 例：https://puppy-wall.你的用户名.workers.dev
+     * 两人同一面墙（推荐 CloudBase 云函数，国内更稳）
+     * 开通步骤见 cloudbase/README.md
+     * 例：https://puppy-d6g9c2hgm5858310c.ap-shanghai.app.tcloudbase.com/wall
+     *
+     * Cloudflare 也可填，国内可能慢；url 留空或 enabled:false 则只用本机
      */
     wall: {
       enabled: true,
-      url: "https://puppy-wall.wenyucs.workers.dev",
-      // 国内访问 workers.dev 可能慢，8 秒连不上就先用本机
+      url: "https://puppy-d6g9c2hgm5858310c-1301922575.ap-shanghai.app.tcloudbase.com/wall",
+      // 国内访问若偶发慢，8 秒连不上就先用本机
       timeoutMs: 8000,
     },
   },
