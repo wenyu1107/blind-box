@@ -9,6 +9,7 @@
   const NOTE_KEY = "puppy-house-notes";
   const THEME_KEY = "puppy-house-theme";
   const LIGHTS_KEY = "puppy-house-lights";
+  const CUSTOM_THEME_KEY = "puppy-house-custom-theme";
   const FEATURES_KEY = "puppy-house-features";
   const PAGES_KEY = "puppy-house-pages";
   const WEEK_KEY = "puppy-house-week";
@@ -17,6 +18,7 @@
   const WEATHER_COORDS_KEY = "puppy-house-coords";
   const GATE_KEY = "love-blind-box-gate";
   const DRAWN_KEY = "love-blind-box-drawn";
+  const DOG_STYLE_KEY = "puppy-house-dog-style";
 
   const config = window.GIFT_CONFIG || {};
   const home = config.home || {};
@@ -63,6 +65,21 @@
     pageTitle: document.getElementById("page-title"),
     pageBody: document.getElementById("page-body"),
     pageSave: document.getElementById("page-save"),
+    pagePlain: document.getElementById("page-plain"),
+    pageDiary: document.getElementById("page-diary"),
+    pageWishes: document.getElementById("page-wishes"),
+    diaryList: document.getElementById("diary-list"),
+    diaryAddToday: document.getElementById("diary-add-today"),
+    diaryTodayDate: document.getElementById("diary-today-date"),
+    wishForm: document.getElementById("wish-form"),
+    wishInput: document.getElementById("wish-input"),
+    wishList: document.getElementById("wish-list"),
+    wishStats: document.getElementById("wish-stats"),
+    customPaper: document.getElementById("custom-paper"),
+    customInk: document.getElementById("custom-ink"),
+    customLine: document.getElementById("custom-line"),
+    customAccent: document.getElementById("custom-accent"),
+    themeCustomApply: document.getElementById("theme-custom-apply"),
     moodDog: document.getElementById("mood-dog"),
     moodText: document.getElementById("mood-text"),
     windowTemp: document.getElementById("window-temp"),
@@ -81,9 +98,18 @@
   let features = loadFeatures();
   let pages = loadJson(PAGES_KEY, {});
   let currentTheme = localStorage.getItem(THEME_KEY) || home.defaultTheme || "line";
+  let dogStyle = localStorage.getItem(DOG_STYLE_KEY) || (currentTheme === "puppy" ? "puppy" : "line");
+  if (currentTheme === "custom") dogStyle = localStorage.getItem(DOG_STYLE_KEY) || "line";
   let currentLights = localStorage.getItem(LIGHTS_KEY) === "night" ? "night" : "day";
+  let customTheme = loadJson(CUSTOM_THEME_KEY, {
+    paper: "#f4efe6",
+    ink: "#1c1a17",
+    line: "#1c1a17",
+    accent: "#c45c4a",
+  });
   let currentWeather = "clear";
   let currentPageId = null;
+  let currentLayout = "page";
   let ringingId = null;
   let beepTimer = null;
   let wallPushTimer = null;
@@ -114,14 +140,30 @@
     const seed = (home.features || []).slice();
     const saved = loadJson(FEATURES_KEY, null);
     if (!Array.isArray(saved) || !saved.length) return seed;
+    const seedMap = {};
+    seed.forEach(function (item) {
+      seedMap[item.id] = item;
+    });
     const savedIds = {};
     saved.forEach(function (item) {
       savedIds[item.id] = true;
+      const fromSeed = seedMap[item.id];
+      if (fromSeed && fromSeed.layout && !item.layout) item.layout = fromSeed.layout;
+      if (fromSeed && fromSeed.desc && item.id === fromSeed.id) {
+        // keep user title, refresh canned desc lightly only if empty
+        if (!item.desc) item.desc = fromSeed.desc;
+      }
     });
     seed.forEach(function (item) {
       if (item.pinned && !savedIds[item.id]) saved.unshift(item);
     });
-    return saved;
+    // 强制刷新预置房间的 layout（日记/心愿），避免旧缓存一直是空白长文
+    return saved.map(function (item) {
+      const fromSeed = seedMap[item.id];
+      if (fromSeed && fromSeed.layout) item.layout = fromSeed.layout;
+      if (fromSeed && fromSeed.desc) item.desc = fromSeed.desc;
+      return item;
+    });
   }
 
   function markGatePassed() {
@@ -172,21 +214,44 @@
   }
 
   function applyAppearance() {
-    document.body.classList.remove("theme-line", "theme-puppy", "theme-night");
-    document.body.classList.add("theme-" + (currentTheme === "puppy" ? "puppy" : "line"));
+    document.body.classList.remove("theme-line", "theme-puppy", "theme-night", "theme-custom");
+    if (currentTheme === "custom") {
+      document.body.classList.add("theme-custom");
+      document.body.classList.add("theme-" + (dogStyle === "puppy" ? "puppy" : "line"));
+      document.body.style.setProperty("--paper", customTheme.paper || "#f4efe6");
+      document.body.style.setProperty("--ink", customTheme.ink || "#1c1a17");
+      document.body.style.setProperty("--ink-soft", softColor(customTheme.ink || "#1c1a17"));
+      document.body.style.setProperty("--line", customTheme.line || "#1c1a17");
+      document.body.style.setProperty("--accent", customTheme.accent || "#c45c4a");
+    } else {
+      document.body.style.removeProperty("--paper");
+      document.body.style.removeProperty("--ink");
+      document.body.style.removeProperty("--ink-soft");
+      document.body.style.removeProperty("--line");
+      document.body.style.removeProperty("--accent");
+      document.body.classList.add("theme-" + (currentTheme === "puppy" ? "puppy" : "line"));
+    }
     if (currentLights === "night") document.body.classList.add("theme-night");
     try {
       localStorage.setItem(THEME_KEY, currentTheme);
       localStorage.setItem(LIGHTS_KEY, currentLights);
+      localStorage.setItem(DOG_STYLE_KEY, dogStyle);
+      saveJson(CUSTOM_THEME_KEY, customTheme);
     } catch (e) {
       console.warn("保存主题失败:", e);
     }
+    if (els.customPaper) els.customPaper.value = customTheme.paper || "#f4efe6";
+    if (els.customInk) els.customInk.value = customTheme.ink || "#1c1a17";
+    if (els.customLine) els.customLine.value = customTheme.line || "#1c1a17";
+    if (els.customAccent) els.customAccent.value = customTheme.accent || "#c45c4a";
     document.querySelectorAll(".theme-card").forEach(function (card) {
       const name = card.getAttribute("data-theme");
       const on =
         name === "night"
           ? currentLights === "night"
-          : name === currentTheme && currentLights !== "night";
+          : currentLights !== "night" &&
+            ((name === "custom" && currentTheme === "custom") ||
+              (name !== "custom" && name === currentTheme));
       card.classList.toggle("is-on", on);
     });
     if (els.themeOpen) {
@@ -197,21 +262,43 @@
       const color =
         currentLights === "night"
           ? "#141a26"
-          : currentTheme === "puppy"
-            ? "#fff3ee"
-            : "#f4efe6";
+          : currentTheme === "custom"
+            ? customTheme.paper
+            : currentTheme === "puppy"
+              ? "#fff3ee"
+              : "#f4efe6";
       meta.setAttribute("content", color);
     }
     renderMood();
   }
 
+  function softColor(hex) {
+    return "color-mix(in srgb, " + hex + " 68%, transparent)";
+  }
+
   function onThemePick(name) {
     if (name === "night") {
       currentLights = "night";
+    } else if (name === "custom") {
+      currentTheme = "custom";
+      currentLights = "day";
     } else {
       currentTheme = name === "puppy" ? "puppy" : "line";
+      dogStyle = currentTheme;
       currentLights = "day";
     }
+    applyAppearance();
+  }
+
+  function applyCustomThemeFromInputs() {
+    customTheme = {
+      paper: (els.customPaper && els.customPaper.value) || "#f4efe6",
+      ink: (els.customInk && els.customInk.value) || "#1c1a17",
+      line: (els.customLine && els.customLine.value) || "#1c1a17",
+      accent: (els.customAccent && els.customAccent.value) || "#c45c4a",
+    };
+    currentTheme = "custom";
+    currentLights = "day";
     applyAppearance();
   }
 
@@ -434,6 +521,36 @@
     scheduleWallPush();
   }
 
+  function upsertStamp(dS, kind) {
+    let stamps = loadJson(STAMP_KEY, []);
+    if (!Array.isArray(stamps)) stamps = [];
+    const exists = stamps.some(function (item) {
+      return item && item.d_s === dS;
+    });
+    if (exists) {
+      stamps = stamps.map(function (item) {
+        if (item.d_s === dS && kind === "box") item.kind = "box";
+        return item;
+      });
+      saveJson(STAMP_KEY, stamps);
+      return false;
+    }
+    stamps.push({ d_s: dS, at: Date.now(), kind: kind || "visit" });
+    saveJson(STAMP_KEY, stamps.slice(-36));
+    return true;
+  }
+
+  function stampVisitToday() {
+    if (home.stampOnVisit === false) return;
+    const dS = todayDs();
+    const added = upsertStamp(dS, "visit");
+    if (added && els.stampHint) {
+      els.stampHint.textContent = "今天进门爪印已盖上～拆盲盒那天也会留一枚。";
+    }
+    renderStamps();
+    scheduleWallPush();
+  }
+
   function collectStamps() {
     let stamps = loadJson(STAMP_KEY, []);
     if (!Array.isArray(stamps)) stamps = [];
@@ -441,13 +558,8 @@
       const raw = localStorage.getItem(DRAWN_KEY);
       const drawn = raw ? JSON.parse(raw) : null;
       if (drawn && drawn.d_s) {
-        const exists = stamps.some(function (item) {
-          return item.d_s === drawn.d_s;
-        });
-        if (!exists) {
-          stamps.push({ d_s: drawn.d_s, at: drawn.at || Date.now() });
-          saveJson(STAMP_KEY, stamps);
-        }
+        upsertStamp(drawn.d_s, "box");
+        stamps = loadJson(STAMP_KEY, []);
       }
     } catch (e) {
       console.warn("同步爪印失败:", e);
@@ -456,11 +568,11 @@
   }
 
   function renderStamps() {
-    const stamps = collectStamps().slice(-12);
-    if (els.stampHint) {
+    const stamps = collectStamps().slice(-18);
+    if (els.stampHint && !String(els.stampHint.textContent || "").includes("已盖上")) {
       els.stampHint.textContent = stamps.length
-        ? "已经盖了 " + stamps.length + " 枚。工作日就靠这些等周末。"
-        : "墙上还空着。等到周末拆盲盒，就会盖一枚爪印。";
+        ? "已经盖了 " + stamps.length + " 枚。每天进门一枚，拆盲盒也会记。"
+        : "每天进门盖一枚，拆盲盒也会再留一笔。";
     }
     if (!els.stampWall) return;
     if (!stamps.length) {
@@ -476,9 +588,15 @@
         const last = String(item.d_s || "0").slice(-1);
         const rot = (last.charCodeAt(0) % 17) - 8;
         const title =
-          String(item.d_s).slice(4, 6) + "月" + String(item.d_s).slice(6, 8) + "日";
+          String(item.d_s).slice(4, 6) +
+          "月" +
+          String(item.d_s).slice(6, 8) +
+          "日" +
+          (item.kind === "box" ? " · 盲盒" : " · 进门");
         return (
-          "<svg class=\"stamp-paw\" title=\"" +
+          "<svg class=\"stamp-paw" +
+          (item.kind === "box" ? " is-box" : "") +
+          "\" title=\"" +
           escapeHtml(title) +
           "\" style=\"transform:rotate(" +
           rot +
@@ -611,33 +729,323 @@
       .join("");
   }
 
+  function resolveLayout(item, page) {
+    if (page && page.layout) return page.layout;
+    if (item && item.layout) return item.layout;
+    if (item && item.id === "photo-wall") return "diary";
+    if (item && item.id === "wish-board") return "wishes";
+    return "page";
+  }
+
+  function ensurePageShape(id, item) {
+    const existing = pages[id] || {};
+    const layout = resolveLayout(item, existing);
+    const page = {
+      title: existing.title || (item && item.title) || "未命名",
+      layout: layout,
+      body: existing.body || "",
+      entries: Array.isArray(existing.entries) ? existing.entries : [],
+      wishes: Array.isArray(existing.wishes) ? existing.wishes : [],
+      at: existing.at || Date.now(),
+    };
+    if (layout === "diary" && page.body && !page.entries.length) {
+      page.entries.push({
+        id: "legacy-" + id,
+        d_s: todayDs(),
+        text: page.body,
+        at: page.at,
+        updatedAt: page.at,
+      });
+      page.body = "";
+    }
+    if (layout === "wishes" && page.body && !page.wishes.length) {
+      String(page.body)
+        .split(/\n+/)
+        .map(function (line) {
+          return line.replace(/^[-*•\s]+/, "").trim();
+        })
+        .filter(Boolean)
+        .forEach(function (text, idx) {
+          page.wishes.push({
+            id: "legacy-w-" + idx,
+            text: text,
+            done: false,
+            at: Date.now(),
+            updatedAt: Date.now(),
+          });
+        });
+      page.body = "";
+    }
+    pages[id] = page;
+    return page;
+  }
+
+  function formatDayLabel(dS) {
+    if (!dS || String(dS).length < 8) return "某一天";
+    const s = String(dS);
+    const today = todayDs();
+    const y = s.slice(0, 4);
+    const m = Number(s.slice(4, 6));
+    const d = Number(s.slice(6, 8));
+    const week = ["日", "一", "二", "三", "四", "五", "六"][
+      new Date(Number(y), m - 1, d).getDay()
+    ];
+    const label = y + "年" + m + "月" + d + "日 周" + week;
+    if (s === today) return "今天 · " + label;
+    return label;
+  }
+
+  function syncDiaryTodayBanner() {
+    if (!els.diaryTodayDate) return;
+    els.diaryTodayDate.textContent = formatDayLabel(todayDs());
+  }
+
+  function ensureTodayDiary(focusNew) {
+    if (!currentPageId) return null;
+    const page = pages[currentPageId] || { entries: [] };
+    page.entries = page.entries || [];
+    const today = todayDs();
+    const alive = page.entries.filter(function (item) {
+      return item && !item.deleted && item.d_s === today;
+    });
+    if (!alive.length) {
+      const created = {
+        id: "d" + Date.now(),
+        d_s: today,
+        text: "",
+        at: Date.now(),
+        updatedAt: Date.now(),
+      };
+      page.entries.unshift(created);
+      pages[currentPageId] = page;
+      touchPageSave();
+      return created;
+    }
+    if (focusNew) {
+      const created = {
+        id: "d" + Date.now(),
+        d_s: today,
+        text: "",
+        at: Date.now(),
+        updatedAt: Date.now(),
+      };
+      page.entries.unshift(created);
+      pages[currentPageId] = page;
+      touchPageSave();
+      return created;
+    }
+    return alive[0];
+  }
+
+  function groupDiaryEntries(entries) {
+    const map = {};
+    (entries || [])
+      .filter(function (item) {
+        return item && !item.deleted;
+      })
+      .forEach(function (item) {
+        const key = item.d_s || todayDs();
+        if (!map[key]) map[key] = [];
+        map[key].push(item);
+      });
+    return Object.keys(map)
+      .sort(function (a, b) {
+        return a < b ? 1 : -1;
+      })
+      .map(function (dS) {
+        return {
+          d_s: dS,
+          items: map[dS].sort(function (a, b) {
+            return Number(b.at || 0) - Number(a.at || 0);
+          }),
+        };
+      });
+  }
+
+  function renderDiaryCard(item, isToday) {
+    return (
+      "<article class=\"diary-card" +
+      (isToday ? " is-today" : "") +
+      "\" data-id=\"" +
+      escapeHtml(item.id) +
+      "\"><textarea maxlength=\"240\" placeholder=\"随便写一点今天的事…\">" +
+      escapeHtml(item.text || "") +
+      "</textarea><button class=\"ghost-mini\" type=\"button\" data-act=\"del-diary\">丢掉</button></article>"
+    );
+  }
+
+  function renderDiary() {
+    if (!els.diaryList || !currentPageId) return;
+    syncDiaryTodayBanner();
+    ensureTodayDiary(false);
+    const page = pages[currentPageId] || { entries: [] };
+    const today = todayDs();
+    const groups = groupDiaryEntries(page.entries);
+    const todayGroup = groups.find(function (g) {
+      return g.d_s === today;
+    });
+    const pastGroups = groups.filter(function (g) {
+      return g.d_s !== today;
+    });
+
+    let html = "<section class=\"diary-day diary-day-today\">";
+    html += "<div class=\"diary-day-cards\">";
+    if (todayGroup && todayGroup.items.length) {
+      html += todayGroup.items
+        .map(function (item) {
+          return renderDiaryCard(item, true);
+        })
+        .join("");
+    }
+    html += "</div></section>";
+
+    if (pastGroups.length) {
+      html += "<section class=\"diary-past\"><h3 class=\"diary-past-title\">往日</h3>";
+      html += pastGroups
+        .map(function (group) {
+          const cards = group.items
+            .map(function (item) {
+              return renderDiaryCard(item, false);
+            })
+            .join("");
+          return (
+            "<section class=\"diary-day\"><h3>" +
+            escapeHtml(formatDayLabel(group.d_s)) +
+            "</h3><div class=\"diary-day-cards\">" +
+            cards +
+            "</div></section>"
+          );
+        })
+        .join("");
+      html += "</section>";
+    }
+
+    els.diaryList.innerHTML = html;
+  }
+
+  function addDiaryEntry(dS) {
+    if (!currentPageId) return;
+    if (!dS || dS === todayDs()) {
+      ensureTodayDiary(true);
+    } else {
+      const page = pages[currentPageId] || ensurePageShape(currentPageId, {});
+      page.entries = page.entries || [];
+      page.entries.unshift({
+        id: "d" + Date.now(),
+        d_s: dS,
+        text: "",
+        at: Date.now(),
+        updatedAt: Date.now(),
+      });
+      pages[currentPageId] = page;
+      touchPageSave();
+    }
+    renderDiary();
+    window.setTimeout(function () {
+      const first = els.diaryList && els.diaryList.querySelector(".diary-card.is-today textarea");
+      if (first) first.focus();
+    }, 0);
+  }
+
+  function renderWishes() {
+    if (!els.wishList || !currentPageId) return;
+    const page = pages[currentPageId] || { wishes: [] };
+    const list = (page.wishes || []).filter(function (item) {
+      return item && !item.deleted;
+    });
+    const done = list.filter(function (item) {
+      return item.done;
+    }).length;
+    if (els.wishStats) {
+      els.wishStats.textContent = list.length
+        ? "已完成 " + done + " / " + list.length + "。勾掉也不删除，像集邮。"
+        : "许一个小心愿，完成了就勾掉。";
+    }
+    if (!list.length) {
+      els.wishList.innerHTML = "<p class=\"page-empty\">心愿板还空着，写一条吧。</p>";
+      return;
+    }
+    const open = list.filter(function (item) {
+      return !item.done;
+    });
+    const closed = list.filter(function (item) {
+      return item.done;
+    });
+    els.wishList.innerHTML = open
+      .concat(closed)
+      .map(function (item) {
+        return (
+          "<label class=\"wish-item" +
+          (item.done ? " is-done" : "") +
+          "\" data-id=\"" +
+          escapeHtml(item.id) +
+          "\"><input type=\"checkbox\" " +
+          (item.done ? "checked" : "") +
+          " /><span>" +
+          escapeHtml(item.text || "") +
+          "</span><button class=\"ghost-mini\" type=\"button\" data-act=\"del-wish\">删</button></label>"
+        );
+      })
+      .join("");
+  }
+
   function openPage(id) {
     const item = features.find(function (f) {
       return f.id === id;
     });
     if (!item || item.deleted) return;
     currentPageId = id;
-    const page = pages[id] || { title: item.title || "未命名", body: "" };
+    const page = ensurePageShape(id, item);
+    currentLayout = page.layout || "page";
     els.pageTitle.value = page.title || item.title || "";
     els.pageBody.value = page.body || "";
     els.pageSave.textContent = "会自动保存";
+    if (els.pagePlain) els.pagePlain.hidden = currentLayout !== "page";
+    if (els.pageDiary) els.pageDiary.hidden = currentLayout !== "diary";
+    if (els.pageWishes) els.pageWishes.hidden = currentLayout !== "wishes";
+    if (currentLayout === "diary") renderDiary();
+    if (currentLayout === "wishes") renderWishes();
     els.hubHome.hidden = true;
     els.pageScreen.hidden = false;
   }
 
   function closePage() {
     currentPageId = null;
+    currentLayout = "page";
     els.pageScreen.hidden = true;
     els.hubHome.hidden = false;
   }
 
+  function touchPageSave() {
+    if (!currentPageId || !pages[currentPageId]) return;
+    pages[currentPageId].at = Date.now();
+    pages[currentPageId].title = els.pageTitle.value.trim() || pages[currentPageId].title;
+    saveJson(PAGES_KEY, pages);
+    features = features.map(function (item) {
+      if (item.id === currentPageId) {
+        item.title = pages[currentPageId].title;
+        item.updatedAt = Date.now();
+      }
+      return item;
+    });
+    saveJson(FEATURES_KEY, features);
+    if (els.pageSave) els.pageSave.textContent = "已保存";
+    renderFeatures();
+    scheduleWallPush();
+  }
+
   function saveCurrentPage() {
     if (!currentPageId) return;
-    pages[currentPageId] = {
+    if (currentLayout !== "page") {
+      touchPageSave();
+      return;
+    }
+    pages[currentPageId] = Object.assign({}, pages[currentPageId] || {}, {
       title: els.pageTitle.value.trim() || "未命名房间",
       body: els.pageBody.value,
+      layout: "page",
       at: Date.now(),
-    };
+    });
     saveJson(PAGES_KEY, pages);
     features = features.map(function (item) {
       if (item.id === currentPageId) {
@@ -668,7 +1076,12 @@
     const el = document.activeElement;
     if (!el) return false;
     if (el.id === "week-note" || el.id === "page-body" || el.id === "page-title") return true;
-    return Boolean(el.closest && el.closest("#note-board"));
+    if (el.id === "wish-input") return true;
+    return Boolean(
+      (el.closest && el.closest("#note-board")) ||
+        (el.closest && el.closest("#diary-list")) ||
+        (el.closest && el.closest("#wish-list"))
+    );
   }
 
   function wallSnapshot() {
@@ -719,6 +1132,8 @@
         const page = pages[currentPageId] || {};
         els.pageTitle.value = page.title || "";
         els.pageBody.value = page.body || "";
+        if (currentLayout === "diary") renderDiary();
+        if (currentLayout === "wishes") renderWishes();
       }
     }
     if (Array.isArray(state.stamps)) {
@@ -792,6 +1207,7 @@
     els.hubShell.hidden = false;
     applyAppearance();
     loadWeather();
+    stampVisitToday();
     renderStamps();
     startWallSync();
   }
@@ -900,6 +1316,9 @@
     }
     if (els.moodDog) els.moodDog.addEventListener("click", wagDog);
     if (els.weekNote) els.weekNote.addEventListener("input", saveWeekNote);
+    if (els.themeCustomApply) {
+      els.themeCustomApply.addEventListener("click", applyCustomThemeFromInputs);
+    }
   }
 
   function bindRoomsAndPages() {
@@ -989,6 +1408,95 @@
     if (els.pageBack) els.pageBack.addEventListener("click", closePage);
     if (els.pageTitle) els.pageTitle.addEventListener("input", saveCurrentPage);
     if (els.pageBody) els.pageBody.addEventListener("input", saveCurrentPage);
+
+    if (els.diaryAddToday) {
+      els.diaryAddToday.addEventListener("click", function () {
+        addDiaryEntry(todayDs());
+      });
+    }
+    if (els.diaryList) {
+      els.diaryList.addEventListener("input", function (event) {
+        const area = event.target;
+        if (area.tagName !== "TEXTAREA" || !currentPageId) return;
+        const id = area.closest(".diary-card").getAttribute("data-id");
+        const page = pages[currentPageId];
+        page.entries = (page.entries || []).map(function (item) {
+          if (item.id === id) {
+            item.text = area.value;
+            item.updatedAt = Date.now();
+          }
+          return item;
+        });
+        touchPageSave();
+      });
+      els.diaryList.addEventListener("click", function (event) {
+        const btn = event.target.closest("[data-act='del-diary']");
+        if (!btn || !currentPageId) return;
+        const id = btn.closest(".diary-card").getAttribute("data-id");
+        pages[currentPageId].entries = (pages[currentPageId].entries || []).map(function (item) {
+          if (item.id === id) {
+            item.deleted = true;
+            item.updatedAt = Date.now();
+          }
+          return item;
+        });
+        touchPageSave();
+        renderDiary();
+      });
+    }
+
+    if (els.wishForm) {
+      els.wishForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        if (!currentPageId || !els.wishInput) return;
+        const text = els.wishInput.value.trim();
+        if (!text) return;
+        const page = pages[currentPageId] || ensurePageShape(currentPageId, {});
+        page.wishes = page.wishes || [];
+        page.wishes.unshift({
+          id: "w" + Date.now(),
+          text: text,
+          done: false,
+          at: Date.now(),
+          updatedAt: Date.now(),
+        });
+        pages[currentPageId] = page;
+        els.wishInput.value = "";
+        touchPageSave();
+        renderWishes();
+      });
+    }
+    if (els.wishList) {
+      els.wishList.addEventListener("change", function (event) {
+        const box = event.target;
+        if (box.type !== "checkbox" || !currentPageId) return;
+        const id = box.closest(".wish-item").getAttribute("data-id");
+        pages[currentPageId].wishes = (pages[currentPageId].wishes || []).map(function (item) {
+          if (item.id === id) {
+            item.done = box.checked;
+            item.updatedAt = Date.now();
+          }
+          return item;
+        });
+        touchPageSave();
+        renderWishes();
+      });
+      els.wishList.addEventListener("click", function (event) {
+        const btn = event.target.closest("[data-act='del-wish']");
+        if (!btn || !currentPageId) return;
+        event.preventDefault();
+        const id = btn.closest(".wish-item").getAttribute("data-id");
+        pages[currentPageId].wishes = (pages[currentPageId].wishes || []).map(function (item) {
+          if (item.id === id) {
+            item.deleted = true;
+            item.updatedAt = Date.now();
+          }
+          return item;
+        });
+        touchPageSave();
+        renderWishes();
+      });
+    }
   }
 
   function bindWidgets() {

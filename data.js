@@ -77,8 +77,9 @@ window.GIFT_CONFIG = {
       {
         id: "wish-board",
         title: "心愿板",
-        desc: "想做的事写在这里",
+        desc: "一条条心愿，完成就勾掉",
         type: "page",
+        layout: "wishes",
         weekendOnly: false,
       },
       {
@@ -86,9 +87,12 @@ window.GIFT_CONFIG = {
         title: "小日记",
         desc: "随便写一点今天的事",
         type: "page",
+        layout: "diary",
         weekendOnly: false,
       },
     ],
+    // visit = 每天进小狗屋盖一枚；box = 拆盲盒再盖（同一天只留一枚）
+    stampOnVisit: true,
     /**
      * 两人同一面墙（推荐 CloudBase 云函数，国内更稳）
      * 开通步骤见 cloudbase/README.md

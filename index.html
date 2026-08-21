@@ -180,7 +180,7 @@
 
           <article class="stamp-card">
             <h2 class="widget-title">周末爪印</h2>
-            <p class="stamp-hint" id="stamp-hint">拆过盲盒就会盖一枚。</p>
+            <p class="stamp-hint" id="stamp-hint">每天进门盖一枚，拆盲盒也会记一笔。</p>
             <div class="stamp-wall" id="stamp-wall"></div>
           </article>
         </section>
@@ -232,7 +232,28 @@
             <p class="page-save" id="page-save">会自动保存</p>
           </div>
           <input id="page-title" class="page-title-input" type="text" maxlength="24" placeholder="这一页的名字" />
-          <textarea id="page-body" class="page-body" placeholder="在这里随便写。想写给谁、想吃什么、今天发生的事都可以。"></textarea>
+
+          <div id="page-plain">
+            <textarea id="page-body" class="page-body" placeholder="在这里随便写。"></textarea>
+          </div>
+
+          <div id="page-diary" class="page-special" hidden>
+            <div class="diary-today-head">
+              <p class="diary-today-date" id="diary-today-date">今天</p>
+              <button class="line-btn tiny" id="diary-add-today" type="button">再写一张</button>
+            </div>
+            <p class="page-tip">今天的纸条不会互相覆盖；换一天会自动开新的一天。</p>
+            <div id="diary-list" class="diary-list"></div>
+          </div>
+
+          <div id="page-wishes" class="page-special" hidden>
+            <form class="wish-form" id="wish-form">
+              <input id="wish-input" class="line-input" type="text" maxlength="40" placeholder="许一个小心愿…" required />
+              <button class="line-btn" type="submit">贴上</button>
+            </form>
+            <p class="page-tip" id="wish-stats">完成了的可以勾掉，还会留在下面。</p>
+            <div id="wish-list" class="wish-list"></div>
+          </div>
         </div>
       </section>
     </div>
@@ -257,6 +278,16 @@
             <strong>关灯回家</strong>
             <span>深蓝和小灯</span>
           </button>
+        </div>
+        <div class="theme-custom-box">
+          <p class="theme-custom-title">调我自己的颜色</p>
+          <div class="theme-color-row">
+            <label>纸色 <input id="custom-paper" type="color" value="#f4efe6" /></label>
+            <label>字色 <input id="custom-ink" type="color" value="#1c1a17" /></label>
+            <label>描边 <input id="custom-line" type="color" value="#1c1a17" /></label>
+            <label>强调 <input id="custom-accent" type="color" value="#c45c4a" /></label>
+          </div>
+          <button class="line-btn tiny" id="theme-custom-apply" type="button">用这套颜色</button>
         </div>
         <button class="line-btn" id="theme-close" type="button">好了</button>
       </div>
